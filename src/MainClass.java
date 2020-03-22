@@ -54,8 +54,7 @@ public class MainClass extends PApplet {
                 JPanel text = new JPanel(new GridLayout(0,1,2,2));
 
                 text.add(new JLabel(a, SwingConstants.RIGHT));
-                text.add(new JLabel(b, SwingConstants.RIGHT
-                ));
+                text.add(new JLabel(b, SwingConstants.RIGHT));
                 text.add(new JLabel(c, SwingConstants.RIGHT));
 
 
@@ -498,6 +497,7 @@ public class MainClass extends PApplet {
         graphe_manager = new GrapheManager();
         //Graphe graphe = saisie_graphe();
         //afficher_matrice(adjacence(graphe));
+
     }
 
 
