@@ -1,3 +1,4 @@
+import com.sun.org.apache.bcel.internal.generic.FADD;
 import processing.core.PApplet;
 import javax.swing.*;
 import java.awt.*;
@@ -9,15 +10,19 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import java.awt.Color;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.text.NumberFormat;
 import java.util.Locale;
 
 public class MainClass extends PApplet {
+
     public static void main(String[] args){
         PApplet.main("MainClass", args);
     }
 
     long startMemoryUsed=Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
+
 
     public class Dialog<A, B, C>{
         private Class<A> aType;
@@ -49,7 +54,8 @@ public class MainClass extends PApplet {
                 JPanel text = new JPanel(new GridLayout(0,1,2,2));
 
                 text.add(new JLabel(a, SwingConstants.RIGHT));
-                text.add(new JLabel(b, SwingConstants.RIGHT));
+                text.add(new JLabel(b, SwingConstants.RIGHT
+                ));
                 text.add(new JLabel(c, SwingConstants.RIGHT));
 
 
@@ -132,6 +138,7 @@ public class MainClass extends PApplet {
             return this.cV;
         }
     }
+
 
     public static class Liste<T>{
         private T value;
@@ -229,6 +236,7 @@ public class MainClass extends PApplet {
         }
     }
 
+
     public class Arete{
         private int sommet_initial;
         private int sommet_final;
@@ -309,6 +317,7 @@ public class MainClass extends PApplet {
         }
 
     }
+
 
     public class Sommet{
         private int index;
@@ -397,6 +406,7 @@ public class MainClass extends PApplet {
         }
     }
 
+
     public class Graphe{
         private String name;
         private Liste<Arete> aretes;
@@ -444,6 +454,7 @@ public class MainClass extends PApplet {
         }
     }
 
+
     Frame box;
     JFrame frame;
     UIManager ui_manager;
@@ -464,11 +475,13 @@ public class MainClass extends PApplet {
 
     NumberFormat nf = NumberFormat.getInstance(new Locale("fr", "FR"));
 
+
     public void mouseReleased(){
         index_sommet_holded = -1;
         index_second_sommet_to_dock_if_released = -1;
         in_search_of_top_to_dock = false;
     }
+
 
     public void setup(){
         surface.setSize(900,400);
@@ -486,6 +499,7 @@ public class MainClass extends PApplet {
         //Graphe graphe = saisie_graphe();
         //afficher_matrice(adjacence(graphe));
     }
+
 
     public void draw(){
 
@@ -513,6 +527,7 @@ public class MainClass extends PApplet {
         text(nf.format(((curentMemoryUsed-startMemoryUsed)/1000000.0)) + " Mo", 20,70);
         text(nf.format(((curentMemoryUsed/1000000.0))) + " Mo", 20,90);
     }
+
 
     public class GrapheManager{
         private Liste<Graphe> graphes;
@@ -570,7 +585,8 @@ public class MainClass extends PApplet {
         }
     }
 
-    public class UIManager {
+
+    public class UIManager implements MouseListener {
 
         public UIManager(){
 
@@ -669,7 +685,33 @@ public class MainClass extends PApplet {
             popMatrix();
         }
 
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
     }
+
 
     public class Frame extends JFrame implements ActionListener {
 
