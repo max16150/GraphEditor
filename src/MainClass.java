@@ -8,12 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
-import javax.swing.JButton;
-import javax.swing.JToggleButton;
 import java.awt.Color;
-import javax.swing.JTabbedPane;
-import javax.swing.BoxLayout;
 import java.text.NumberFormat;
 import java.util.Locale;
 
@@ -25,12 +20,12 @@ public class MainClass extends PApplet {
     long startMemoryUsed=Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
 
     public class Dialog<A, B, C>{
-        Class<A> aType;
-        A aV;
-        Class<B> bType;
-        B bV;
-        Class<C> cType;
-        C cV;
+        private Class<A> aType;
+        private A aV;
+        private Class<B> bType;
+        private B bV;
+        private Class<C> cType;
+        private C cV;
 
         Dialog(String title, String a, String b, String c, Class<A> tA, Class<B> tB, Class<C> tC){
 
@@ -138,7 +133,7 @@ public class MainClass extends PApplet {
         }
     }
 
-    public class Liste<T>{
+    public static class Liste<T>{
         private T value;
         private Liste<T> nextList;
 
@@ -292,26 +287,27 @@ public class MainClass extends PApplet {
                 int x2 = (int)(xA - ((distAB-ecart)*(xA-xB)/distAB));
                 int y2 = (int)(yA + ((distAB-ecart)*(yB-yA)/distAB));
 
-                arrowHead(x1, y1, x2, y2);
+                this.arrowHead(x1, y1, x2, y2);
                 line(x1, y1, x2, y2);
             } else {
                 noFill();
                 arc(sommetinitial.getX() + 20, sommetinitial.getY(), 40, 40, PI+QUARTER_PI, TWO_PI+3*QUARTER_PI);
                 noStroke();
                 fill(255);
-                arrowHead(sommetinitial.getX() + 5, sommetinitial.getY() + 15, sommetinitial.getX()+ 1, sommetinitial.getY() + 7);
+                this.arrowHead(sommetinitial.getX() + 5, sommetinitial.getY() + 15, sommetinitial.getX()+ 1, sommetinitial.getY() + 7);
             }
             noStroke();
         }
 
-        void arrowHead(int xA, int yA, int xB, int yB) {
+        public void arrowHead(int xA, int yA, int xB, int yB) {
             float size = 4;
             pushMatrix();
             translate(xB, yB);
             rotate(atan2(yB - yA, xB - xA));
-            triangle(- size * 2 , - size, 0, 0, - size * 2, size);
+            triangle(-size * 2, -size, 0, 0, -size * 2, size);
             popMatrix();
         }
+
     }
 
     public class Sommet{
@@ -344,15 +340,33 @@ public class MainClass extends PApplet {
         }
 
         public void draw(){
+            this.afficherSommets();
+
+            if ((mousePressed && (mouseButton == RIGHT || index_sommet_hover != -1) && mouseButton != LEFT && mouseButton != CENTER)
+                    && dist(mouseX, mouseY, this.posX, this.posY) < 10
+                    && !in_search_of_top_to_dock){
+
+                in_search_of_top_to_dock = true;
+                index_first_sommet_to_dock_if_released = this.index;
+
+            } else if (index_second_sommet_to_dock_if_released == this.index && dist(mouseX, mouseY, this.posX, this.posY) > 10){
+                index_second_sommet_to_dock_if_released = -1;
+            } else if (in_search_of_top_to_dock && dist(mouseX, mouseY, this.posX, this.posY) < 10){
+                index_second_sommet_to_dock_if_released = this.index;
+            }
+
+        }
+
+        private void afficherSommets(){
             fill(255);
-            if (dist(mouseX, mouseY, this.posX, this.posY) < 10 && index_sommet_selected == -1) {
+            if (dist(mouseX, mouseY, this.posX, this.posY) < 10 && index_sommet_holded == -1) {
                 if (index_sommet_hover == -1 || index_sommet_hover == this.index) {
 
                     index_sommet_hover = this.index;
                     frame.setCursor(hand_corsor);
                     fill(0,255,0);
-                    if (mousePressed) {
-                        index_sommet_selected = this.index;
+                    if (mousePressed && mouseButton == LEFT) {
+                        index_sommet_holded = this.index;
                     }
                 }
             } else if (index_sommet_hover == this.index && dist(mouseX, mouseY, this.posX, this.posY) > 10) {
@@ -360,7 +374,7 @@ public class MainClass extends PApplet {
                 frame.setCursor(normal_cursor);
             }
 
-            if (index_sommet_selected == this.index) {
+            if (index_sommet_holded == this.index) {
 
                 int margin = 20;
 
@@ -415,7 +429,7 @@ public class MainClass extends PApplet {
 
         public void draw(){
             // on règle un petit problème rapidement
-            if (index_sommet_hover == -1 && index_sommet_selected == -1 && index_onglet_hover == -1) {
+            if (index_sommet_hover == -1 && index_sommet_holded == -1 && index_onglet_hover == -1) {
                 frame.setCursor(normal_cursor);
             }
 
@@ -441,14 +455,19 @@ public class MainClass extends PApplet {
 
     long curentMemoryUsed;
 
-    int index_sommet_selected = -1;
+    int index_sommet_holded = -1;
     int index_sommet_hover = -1;
+    int index_second_sommet_to_dock_if_released = -1;
+    int index_first_sommet_to_dock_if_released = -1;
+    boolean in_search_of_top_to_dock = false;
     int index_onglet_hover = -1;
 
     NumberFormat nf = NumberFormat.getInstance(new Locale("fr", "FR"));
 
     public void mouseReleased(){
-        index_sommet_selected = -1;
+        index_sommet_holded = -1;
+        index_second_sommet_to_dock_if_released = -1;
+        in_search_of_top_to_dock = false;
     }
 
     public void setup(){
@@ -470,6 +489,12 @@ public class MainClass extends PApplet {
 
     public void draw(){
 
+        if (mouseButton == LEFT){
+            in_search_of_top_to_dock = false;
+            index_second_sommet_to_dock_if_released = -1;
+            index_first_sommet_to_dock_if_released = -1;
+        }
+
         curentMemoryUsed = Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
 
         textSize(12);
@@ -478,9 +503,6 @@ public class MainClass extends PApplet {
         fill(255);
         textAlign(RIGHT);
         text("Réalisé par Gabriel Blanchot et Maxime Boissout", width - 5, height - 30);
-
-
-
 
         ui_manager.draw();
         graphe_manager.drawCurentGraphe();
@@ -493,9 +515,9 @@ public class MainClass extends PApplet {
     }
 
     public class GrapheManager{
-        Liste<Graphe> graphes;
-        int graphe_amount;
-        int curent_graphe;
+        private Liste<Graphe> graphes;
+        private int graphe_amount;
+        private int curent_graphe;
 
         GrapheManager(){
             this.graphes = new Liste<Graphe>();
@@ -555,7 +577,11 @@ public class MainClass extends PApplet {
         }
 
         public void draw(){
+            afficherOnglets();
+            afficherAretesEnCourDeCreation();
+        }
 
+        private void afficherOnglets(){
             int nombre_de_graphe = graphe_manager.getAmountOfGraphe();
 
             if (nombre_de_graphe <= 0) {
@@ -600,35 +626,78 @@ public class MainClass extends PApplet {
 
             textAlign(CENTER);
         }
+
+        private void afficherAretesEnCourDeCreation(){
+            if (mousePressed && mouseButton == RIGHT && in_search_of_top_to_dock){
+
+                fill(255);
+                stroke(255);
+                int ecart = 15;
+
+                int xA = graphe_manager.getCurentGraphe().getSommet(index_first_sommet_to_dock_if_released).getX();
+                int xB = mouseX;
+
+                int yA = graphe_manager.getCurentGraphe().getSommet(index_first_sommet_to_dock_if_released).getY();
+                int yB = mouseY;
+
+                if (index_second_sommet_to_dock_if_released != -1){
+                    xB = graphe_manager.getCurentGraphe().getSommet(index_second_sommet_to_dock_if_released).getX();
+                    yB = graphe_manager.getCurentGraphe().getSommet(index_second_sommet_to_dock_if_released).getY();
+                }
+
+                System.out.println("X1:" + xA + " Y1:" + yA +" X2:" + xB + " Y2:" + yB);
+
+                float distAB = dist(xA, yA, xB, yB);
+
+                int x1 = (int)(xA - (ecart*(xA-xB)/distAB));
+                int y1 = (int)(yA + (ecart*(yB-yA)/distAB));
+
+                int x2 = (int)(xA - ((distAB-ecart)*(xA-xB)/distAB));
+                int y2 = (int)(yA + ((distAB-ecart)*(yB-yA)/distAB));
+
+                arrowHead(x1, y1, x2, y2);
+                line(x1, y1, x2, y2);
+            }
+        }
+
+        public void arrowHead(int xA, int yA, int xB, int yB) {
+            float size = 4;
+            pushMatrix();
+            translate(xB, yB);
+            rotate(atan2(yB - yA, xB - xA));
+            triangle(- size * 2 , - size, 0, 0, - size * 2, size);
+            popMatrix();
+        }
+
     }
 
     public class Frame extends JFrame implements ActionListener {
 
-        JMenuItem action_nouveau_graphe;
-        JMenuItem action_ouvrir_un_graphe;
-        JMenuItem action_fermer_ce_graphe;
-        JMenuItem action_fermer_tout_les_graphes;
-        JMenuItem action_enregistrer_sous;
-        JMenuItem action_imprimer;
-        JMenuItem action_quitter;
+        private JMenuItem action_nouveau_graphe;
+        private JMenuItem action_ouvrir_un_graphe;
+        private JMenuItem action_fermer_ce_graphe;
+        private JMenuItem action_fermer_tout_les_graphes;
+        private JMenuItem action_enregistrer_sous;
+        private JMenuItem action_imprimer;
+        private JMenuItem action_quitter;
 
-        JMenuItem action_revenir_en_arriere;
+        private JMenuItem action_revenir_en_arriere;
 
-        JMenuItem action_calcul_matrice_adjacente;
-        JMenuItem action_calcul_matrice_transitive;
+        private JMenuItem action_calcul_matrice_adjacente;
+        private JMenuItem action_calcul_matrice_transitive;
 
-        JMenuItem action_ajouter_une_arete;
-        JMenuItem action_ajouter_un_sommet;
-        JMenuItem action_supprimer_une_arete;
-        JMenuItem action_supprimer_un_sommet;
-        JMenuItem action_modifier_une_arete;
+        private JMenuItem action_ajouter_une_arete;
+        private JMenuItem action_ajouter_un_sommet;
+        private JMenuItem action_supprimer_une_arete;
+        private JMenuItem action_supprimer_un_sommet;
+        private JMenuItem action_modifier_une_arete;
 
-        JMenuItem action_theme;
+        private JMenuItem action_theme;
 
-        JMenuItem action_mise_a_jour;
-        JMenuItem action_documentation;
+        private JMenuItem action_mise_a_jour;
+        private JMenuItem action_documentation;
 
-        JPanel panel;
+        private JPanel panel;
 
         public Frame() {
 
