@@ -1,4 +1,3 @@
-import com.sun.org.apache.bcel.internal.generic.FADD;
 import processing.core.PApplet;
 import javax.swing.*;
 import java.awt.*;
@@ -10,10 +9,10 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import java.awt.Color;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.text.NumberFormat;
 import java.util.Locale;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 
 public class MainClass extends PApplet {
 
@@ -21,10 +20,27 @@ public class MainClass extends PApplet {
         PApplet.main("MainClass", args);
     }
 
+    /* Utilisé pour calculer la mémoire utilisée par mon programme */
     long startMemoryUsed=Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
 
-
+    /* Classe me permettant d'ouvrir une fenetre de dialogue avec l'utilisateur
+    * partiellement modulable en fonction de mes besoins dans le code
+    * Elle sert notemment pour demander les valeurs d'une nouvelle Arrete ou demander simplement le nom d'un nouveau graphe
+    * Je peux choisir le titre de la fenetre
+    * mais aussi les questions
+    * et le type de valeur que me renverra la fenetre de dialogue une fois fermée
+    * si le type de valeur que l'utilisateur rentre n'est pas bon, elle se réouvre et affiche un message
+    * A, B et C correspondent aux types de valeurs que veux que l'utilisateur rentre (Integer, Float, String ...)*/
     public class Dialog<A, B, C>{
+        /* Le comportement de ma classe change en fonction du Type de valeurs que je veux qu'elle me renvoie
+        * J'ai donc utilisé la Reflexion de Java me permettant de modifier le comportement de mon objet durant l'exécution
+        * aType recevra Integer.class dans le cas ou je voudrais que la première valeur que rentre l'utilisateur
+        * soit un entier
+        *
+        * aV bV et cV prendront les valeurs que l'utilisateur rentrera dans les champs de texte
+        * j'utilise la généricité pour pouvoir la encore décider du type de valeur
+        * aType et aV sont étroitement liées,
+        * si je veux que l'utilisateur rentre un entier dans un champs A = Integer et aType = Integer.class*/
         private Class<A> aType;
         private A aV;
         private Class<B> bType;
@@ -32,23 +48,27 @@ public class MainClass extends PApplet {
         private Class<C> cType;
         private C cV;
 
+        /* Unique constructeur de la fenetre de dialogue, elle peut demander jusqu'a 3 valeurs en meme temps car je
+        * n'ai jamais besoin d'en demander plus*/
         Dialog(String title, String a, String b, String c, Class<A> tA, Class<B> tB, Class<C> tC){
 
             this.aType = tA;
             this.bType = tB;
             this.cType = tC;
 
+            /* Création des zones de texte */
             JTextField xField = new JTextField(4);
             JTextField yField = new JTextField(4);
             JTextField zField = new JTextField(4);
 
+
+            /* ok me permet de savoir si l'utilisateur a rentré les données que je lui demande dans le bon type*/
             int ok = 0;
 
-
+            /* Tourne autant de fois qu'il faudra pour que l'utilisateur rentre les données dans le bon type*/
             while (ok == 0 || ok == 2) {
 
-
-
+                // Défini un endroit ou je pourrais afficher mes champs de texte et le texte de mes question
                 JPanel panel = new JPanel(new BorderLayout(10,10));
 
                 JPanel text = new JPanel(new GridLayout(0,1,2,2));
@@ -63,6 +83,7 @@ public class MainClass extends PApplet {
                 field.add(yField);
                 field.add(zField);
 
+                // Si l'utilisateur a mal rempli les champs de texte, un message d'erreur s'affiche sur la fenetre
                 if (ok == 2) {
                     JLabel error_message = new JLabel("Veuillez renseigner les champs avec des valeurs numériques !");
                     error_message.setForeground(Color.RED);
@@ -75,13 +96,35 @@ public class MainClass extends PApplet {
                 panel.add(text, BorderLayout.WEST);
                 panel.add(field, BorderLayout.CENTER);
 
+                /* Quand ma fenetre vas s'ouvrir, je n'aurais plus aucun moyen d'intéragir dessus avec le code puisque
+                * l'avancé du code vas s'arreter a la ligne, en attendant que l'utilisateur valide ou non pour continuer de s'exécuter.
+                * Je veux que le curseur sois dirrectement sur le premier champs de texte de ma fenetre de dialogue
+                * de ce fait j'utilise l'AncestorListener, qui vas réagir quand xField (qui est le champs de texte)
+                * vas apparaitre a l'écran et a ce moment la, il vas instancier un nouveau FocusRequest (qui est une classe codée
+                * plus loin dans le code) et qui vas me permettre de mettre le curseur sur mon champs de texte*/
+                xField.addAncestorListener(new FocusRequest(false));
 
+                /* Affichage de la fenetre de dialogue, cette méthode est bloquante, tant que
+                * l'utilisateur ne cliquera pas sur OK ou annuler, le code attendra ici */
                 int result = JOptionPane.showConfirmDialog(
-                        frame, panel, title, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                        frame,
+                        panel,
+                        title,
+                        JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.PLAIN_MESSAGE);
 
+                /* Une fois la fenetre fermée, j'enlève le listener, pour pouvoir le refaire si jamais le code doit réouvrir
+                * une nouvelle fenetre*/
+                xField.addAncestorListener(new FocusRequest(true));
+
+
+                /* Si l'utilisateur clique sur OK je vérifie que ce qu'il a rentré concorde avec les types que mon code a besoin*/
                 if (result == JOptionPane.OK_OPTION) {
                     try {
                         if (aType.isAssignableFrom(Integer.class)) {
+                            /* ici par exemple, dans le cas ou aType = Integer.class, j'essaye de convertir la valeur
+                            * du premier champs de texte en un entier, si ça ne fonctionne pas, ceci vas générer une erreur
+                            * et grace au block catch{} je vais pouvoir changer la valeur de ok en 2 */
                             aV = (A) Integer.valueOf(xField.getText());
                         } else if(aType.isAssignableFrom(String.class)) {
                             aV = (A) xField.getText();
@@ -119,6 +162,7 @@ public class MainClass extends PApplet {
                         ok = 2;
                     }
                 } else {
+                    /* Si jamais l'utilisateur clique sur Annuler, ok prend la valeur 1 et me permet de ne pas réouvrir une fenetre*/
                     ok = 1;
                 }
             }
@@ -138,7 +182,9 @@ public class MainClass extends PApplet {
         }
     }
 
-
+    /* Ma classe Liste codée en début de semestre, elle est assez complète et me permet beaucoup d'action sur mes listes
+    * Je peux faire une liste de nimporte quel Objet grace a la généricité
+    * Je ferais par la suite des listes de Sommet Arete et Graphe*/
     public static class Liste<T>{
         private T value;
         private Liste<T> nextList;
@@ -235,8 +281,10 @@ public class MainClass extends PApplet {
         }
     }
 
-
+    /* Classe régissant une arete, plusieures méthodes me permettent une optimisation de lecture
+    * l'affichage de l'arete est dirrectement implémenté dans cette classe avec la méthode draw()*/
     public class Arete{
+        /* Prend en variable de classe le numéro de son sommet de départ ainsi que de fin et une valeur propre a l'instance*/
         private int sommet_initial;
         private int sommet_final;
         private float cout;
@@ -278,6 +326,7 @@ public class MainClass extends PApplet {
             Sommet sommetfinal = g.getSommet(this.sommet_final);
 
             if (this.sommet_initial != this.sommet_final) {
+                /* Dans le cas ou l'arete lie deux sommets différents je dessine une ligne et un petit triangle au bout*/
                 int ecart = 15;
 
                 int xA = sommetinitial.getX();
@@ -288,6 +337,9 @@ public class MainClass extends PApplet {
 
                 float distAB = dist(xA, yA, xB, yB);
 
+                /* Ces caculs me permettent de trouver les points d'ou faire partir la ligne asociée a l'arete
+                * je ne fais pas partir cette ligne tout a fais a l'emplacement du sommet, j'ai donc utilisé le
+                * théorème de thales pour trouver les coordonées de départ et de fin */
                 int x1 = (int)(xA - (ecart*(xA-xB)/distAB));
                 int y1 = (int)(yA + (ecart*(yB-yA)/distAB));
 
@@ -297,6 +349,8 @@ public class MainClass extends PApplet {
                 this.arrowHead(x1, y1, x2, y2);
                 line(x1, y1, x2, y2);
             } else {
+                /* Dans le cas ou l'arete lie le meme sommet, je dessine un arc de cercle ainsi que le triangle
+                * qui constitue le bout de ma fleche */
                 noFill();
                 arc(sommetinitial.getX() + 20, sommetinitial.getY(), 40, 40, PI+QUARTER_PI, TWO_PI+3*QUARTER_PI);
                 noStroke();
@@ -306,32 +360,42 @@ public class MainClass extends PApplet {
             noStroke();
         }
 
+        /* Ma méthode pour générer le triangle orienté en fonction de la ligne qui le précède*/
         public void arrowHead(int xA, int yA, int xB, int yB) {
             float size = 4;
             pushMatrix();
-            translate(xB, yB);
-            rotate(atan2(yB - yA, xB - xA));
-            triangle(-size * 2, -size, 0, 0, -size * 2, size);
+                translate(xB, yB);
+                rotate(atan2(yB - yA, xB - xA));
+                triangle(-size * 2, -size, 0, 0, -size * 2, size);
             popMatrix();
         }
 
     }
 
-
+    /* Classe définissant les sommets*/
     public class Sommet{
+        /* Un sommet a une position bien définie sur la fenetre d'affichage (posX, posY)
+        * Il possède un index (c'est son numéro)
+        * Et il peux posséder un nom qui s'affichera a l'écran au dessus de lui si il est défini */
         private int index;
         private int posX;
         private int posY;
         private String name;
 
+        /* Trois constructeurs pour mes sommets*/
+        /* un qui prend simplement un numéro de sommet
+         * Dans ce cas il créra un sommet au millieu de l'écran et n'aura pas de nom*/
         public Sommet(int index){
             this(width/2, height/2, index, "");
         }
 
+        /* Un qui prend les coordonées du point et son numéro
+         * Dans ce cas il n'aura pas de nom*/
         public Sommet(int x, int y, int index){
             this(x, y, index, "");
         }
 
+        /* dans ce cas il prend toutes les valeurs qu'on lui demande*/
         public Sommet(int x, int y, int index, String str){
             this.posX = x;
             this.posY = y;
@@ -347,24 +411,48 @@ public class MainClass extends PApplet {
             return this.posY;
         }
 
+        /* Méthode qui gère l'affichage des sommets*/
         public void draw(){
             this.afficherSommets();
 
-            if ((mousePressed && (mouseButton == RIGHT || index_sommet_hover != -1) && mouseButton != LEFT && mouseButton != CENTER)
+
+            if ((
+                    mousePressed && (mouseButton == RIGHT || index_sommet_hover != -1) && mouseButton != LEFT && mouseButton != CENTER)
                     && dist(mouseX, mouseY, this.posX, this.posY) < 10
                     && !in_search_of_top_to_dock){
 
+                /* Dans le cas ou je clique sur un sommet avec le clic gauche, je déplace le sommet*/
                 in_search_of_top_to_dock = true;
                 index_first_sommet_to_dock_if_released = this.index;
 
-            } else if (index_second_sommet_to_dock_if_released == this.index && dist(mouseX, mouseY, this.posX, this.posY) > 10){
+            } else if (
+                    in_search_of_top_to_dock
+                    && index_second_sommet_to_dock_if_released == this.index
+                    && dist(mouseX, mouseY, this.posX, this.posY) > 10){
+
+                /* Dans le cas ou je serais en train de créer une arete avec le clik droit,
+                * je vérifi si le sommet final enregistré correspond a l'index de cette instance,
+                * je vérifie si ma souris est bien sur ce sommet, dnas le cas ou elle n'y serais plus (distance > 10)
+                * alors je remet le sommet final "en jeux"
+                * cela évite que le sommet de fin reste bloqué a une instance*/
                 index_second_sommet_to_dock_if_released = -1;
-            } else if (in_search_of_top_to_dock && dist(mouseX, mouseY, this.posX, this.posY) < 10){
+
+            } else if (
+                    in_search_of_top_to_dock
+                    && dist(mouseX, mouseY, this.posX, this.posY) < 10){
+
+                /* Dans le cas ou je serais en train de créer une arrete avec le clik droit,
+                * si jamais ma sourie est a moins de 10 pixels des coordonées de l'instance de ce sommet alors je considère
+                * que le sommet que l'utilisateur veux lier est celui ci*/
                 index_second_sommet_to_dock_if_released = this.index;
+
             }
 
         }
 
+        /* Méthode qui affiche les sommets, si jamais la souris de l'utilisateur est sur l'un de ces sommets, alors le curseur change de forme
+        * et le sommet change de couleur; si jamais l'utilisateur clique gauche sur un sommet, il peux le déplacer,
+        * le curseur change donc de forme et le sommet change de couleur*/
         private void afficherSommets(){
             fill(255);
             if (dist(mouseX, mouseY, this.posX, this.posY) < 10 && index_sommet_holded == -1) {
@@ -406,12 +494,16 @@ public class MainClass extends PApplet {
     }
 
 
+    /* Classe qui régie chaques graphes */
     public class Graphe{
+        /* Chaques graphes a un nom, et possède une liste de sommet et d'aretes*/
         private String name;
         private Liste<Arete> aretes;
         private Liste<Sommet> sommets;
 
 
+        /* Chaques graphes créé est nomé par défaut "nouveau graphe"
+        * j'instancie les listes de sommets et d'aretes*/
         public Graphe(){
             this.name = "Nouveau Graphe";
             this.aretes = new Liste<Arete>();
@@ -426,16 +518,20 @@ public class MainClass extends PApplet {
             return this.sommets.get(i-1);
         }
 
+        /* rajoute un sommet a la liste des sommets du graphe, il aura une position aléatoire sur la
+        * fenetre et portera un numéro équivalent au numéro du dernier sommet +1*/
         public void addSommet(){
             Sommet nouveau_sommet = new Sommet((int)random(100,width-100), (int)random(100,height-100), sommets.size()+1);
             this.sommets.add(nouveau_sommet);
         }
 
+        /* Ajoute une arrete a la liste des aretes du graphe*/
         public void addArete(int a, int b, float cout){
             Arete nouvelle_arete = new Arete(a, b, cout);
             this.aretes.add(nouvelle_arete);
         }
 
+        /* Dessine le graphe en appelant les méthodes draw de tout les sommets et aretes du graphe*/
         public void draw(){
             // on règle un petit problème rapidement
             if (index_sommet_hover == -1 && index_sommet_holded == -1 && index_onglet_hover == -1) {
@@ -454,7 +550,7 @@ public class MainClass extends PApplet {
     }
 
 
-    Frame box;
+    Menu menu;
     JFrame frame;
     UIManager ui_manager;
     GrapheManager graphe_manager;
@@ -472,6 +568,7 @@ public class MainClass extends PApplet {
     boolean in_search_of_top_to_dock = false;
     int index_onglet_hover = -1;
 
+    /* Me permet de calculer la mémoire utilisée par mon programme*/
     NumberFormat nf = NumberFormat.getInstance(new Locale("fr", "FR"));
 
 
@@ -490,13 +587,13 @@ public class MainClass extends PApplet {
 
         nf.setMaximumFractionDigits(2);
 
-        box = new Frame();
 
+
+        /* Créé une nouvelle instance de UIManager, me permettant de gérer l'interface graphique du programme*/
         ui_manager = new UIManager();
 
+        /* Créé une nouvelle instance de GrapheManager, me permettant de gérer mes graphes*/
         graphe_manager = new GrapheManager();
-        //Graphe graphe = saisie_graphe();
-        //afficher_matrice(adjacence(graphe));
 
     }
 
@@ -586,24 +683,27 @@ public class MainClass extends PApplet {
     }
 
 
-    public class UIManager implements MouseListener {
+    public class UIManager {
 
         public UIManager(){
-
+            /* Créé la barre de menu suppérieur de mon programme (Fichier Edition ...) */
+            menu = new Menu();
         }
 
+        /* Dessine les onglets ainsi que les aretes en cours de création avec le clic droit de la souris*/
         public void draw(){
             afficherOnglets();
             afficherAretesEnCourDeCreation();
         }
 
+        /* Dessine les onglets*/
         private void afficherOnglets(){
             int nombre_de_graphe = graphe_manager.getAmountOfGraphe();
 
             if (nombre_de_graphe <= 0) {
-                box.grapheClickabke(false);
+                menu.grapheClickabke(false);
             } else {
-                box.grapheClickabke(true);
+                menu.grapheClickabke(true);
             }
 
             int largeur_onglet = 150;
@@ -613,6 +713,9 @@ public class MainClass extends PApplet {
             fill(24, 25, 21);
             rect(0, 0, width, 35);
 
+            /* Dessine autant d'onglet qu'il y a de graphes et prend soin de récupérer le nom de chaques
+            * graphes pour nomer l'onglet ainsi
+            * Vérifie si le curseur survole l'onglet qui est en train d'étre déssiné */
             for (int i = 0; i < nombre_de_graphe; i++) {
 
                 if (graphe_manager.getNumberOfCurentGrahe()-1 == i) {
@@ -627,6 +730,8 @@ public class MainClass extends PApplet {
                 textSize(12);
                 text(graphe_manager.getGraphe(i).getName(), 10 + i*largeur_onglet + 10, 25);
 
+                /* Vérifie si le curseur survole l'onglet qui est en train d'étre déssiné si jamais la sourie est cliquée
+                * alors le graphe a afficher vas changer en conséquence */
                 if (mouseY < 35 && mouseY > 0 && mouseX > 10 + i*largeur_onglet && mouseX < 10 + (i+1)*largeur_onglet) {
                     index_onglet_hover = 1;
                     frame.setCursor(hand_corsor);
@@ -636,13 +741,15 @@ public class MainClass extends PApplet {
                 }
             }
 
-            if (!(mouseY < 35 && mouseY > 0 && mouseX > 10 + 0*largeur_onglet && mouseX < 10 + (graphe_manager.getAmountOfGraphe())*largeur_onglet)) {
+            /* Si la sourie est en dehors de tout les onglets alors il n'y a plus de sommets pouvant étre survolé*/
+            if (!(mouseY < 35 && mouseY > 0 && mouseX > 10 && mouseX < 10 + (graphe_manager.getAmountOfGraphe())*largeur_onglet)) {
                 index_onglet_hover = -1;
             }
 
             textAlign(CENTER);
         }
 
+        /* Dessine les aretes en cours de création*/
         private void afficherAretesEnCourDeCreation(){
             if (mousePressed && mouseButton == RIGHT && in_search_of_top_to_dock){
 
@@ -650,20 +757,24 @@ public class MainClass extends PApplet {
                 stroke(255);
                 int ecart = 15;
 
+                /* Récupère les coordonées du point de départ ainsi que de la souri*/
+
                 int xA = graphe_manager.getCurentGraphe().getSommet(index_first_sommet_to_dock_if_released).getX();
                 int xB = mouseX;
 
                 int yA = graphe_manager.getCurentGraphe().getSommet(index_first_sommet_to_dock_if_released).getY();
                 int yB = mouseY;
 
+                /* Si jamais la souris survole un sommet, alors la fleche se dessine plus en fonction des
+                * coordonées de la souris mais en fonction des coordonées de ce sommet*/
                 if (index_second_sommet_to_dock_if_released != -1){
                     xB = graphe_manager.getCurentGraphe().getSommet(index_second_sommet_to_dock_if_released).getX();
                     yB = graphe_manager.getCurentGraphe().getSommet(index_second_sommet_to_dock_if_released).getY();
                 }
 
-                System.out.println("X1:" + xA + " Y1:" + yA +" X2:" + xB + " Y2:" + yB);
-
                 float distAB = dist(xA, yA, xB, yB);
+
+                /* Calcul des coordonées grace au théorème de thales*/
 
                 int x1 = (int)(xA - (ecart*(xA-xB)/distAB));
                 int y1 = (int)(yA + (ecart*(yB-yA)/distAB));
@@ -676,6 +787,7 @@ public class MainClass extends PApplet {
             }
         }
 
+        /* Méthode pour dessiner le triangle en bout de ligne pour faire une fleche */
         public void arrowHead(int xA, int yA, int xB, int yB) {
             float size = 4;
             pushMatrix();
@@ -685,36 +797,14 @@ public class MainClass extends PApplet {
             popMatrix();
         }
 
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-
-        }
     }
 
 
-    public class Frame extends JFrame implements ActionListener {
+    /* Classe régissant la création de la barre de menu suppérieure*/
+    public class Menu extends JFrame implements ActionListener {
 
+
+        /* Déclaration de tout les élèments de mon menu*/
         private JMenuItem action_nouveau_graphe;
         private JMenuItem action_ouvrir_un_graphe;
         private JMenuItem action_fermer_ce_graphe;
@@ -741,13 +831,16 @@ public class MainClass extends PApplet {
 
         private JPanel panel;
 
-        public Frame() {
+        /* Constructeur */
+        public Menu() {
 
             frame.setLocationRelativeTo(null);
             JMenuBar barre = new JMenuBar();
 
             frame.setJMenuBar(barre);
 
+            /* La grande barre de menu (la JMenuBar) est composée de plusieurs autres menu (les JMenu), on leur donne
+            * un texte a afficher (Fichier, Edition ...)*/
 
             JMenu fichier_menu = new JMenu("Fichier");
             JMenu edition_menu = new JMenu("Édition");
@@ -756,7 +849,7 @@ public class MainClass extends PApplet {
             JMenu preference_menu = new JMenu("Préférences");
             JMenu aide_menu = new JMenu("Aide");
 
-
+            /* On ajoute a la grande barre ses menu*/
             barre.add(fichier_menu);
             barre.add(edition_menu);
             barre.add(outils_menu);
@@ -766,6 +859,10 @@ public class MainClass extends PApplet {
 
             // --------------------------------------------------------------
 
+
+            /* Un menu (fichier par exemple ) peux comporter d'autres menu, ou simplement il peux comporter les "boutons"
+            * qui exécuterons des taches (les JMenuItem)
+            * Ici on défini ceux du menu Fichier*/
             action_nouveau_graphe = new JMenuItem("Nouveau Graphe");
             action_ouvrir_un_graphe = new JMenuItem("Ouvrir un Graphe");
             action_fermer_ce_graphe = new JMenuItem("Fermer ce Graphe");
@@ -774,6 +871,9 @@ public class MainClass extends PApplet {
             action_imprimer = new JMenuItem("Imprimer ce Graphe");
             action_quitter = new JMenuItem("Quitter");
 
+            /* Puis on leur ajoute un écouteur, si une action est recensé sur un de ces boutons (si un bouton est cliqué)
+            * alors la méthode ActionPerformed (plus bas) sera exécutée et aura en parametre le bouton qui aura été cliqué
+            * nous pourrons alors exécuter l'action correspondante au bouton*/
             action_nouveau_graphe.addActionListener(this);
             action_ouvrir_un_graphe.addActionListener(this);
             action_fermer_ce_graphe.addActionListener(this);
@@ -782,6 +882,7 @@ public class MainClass extends PApplet {
             action_imprimer.addActionListener(this);
             action_quitter.addActionListener(this);
 
+            /* Ici on met en forme le menu, on ajoute quelques séparateurs pour l'estétique*/
             fichier_menu.add(action_nouveau_graphe);
             fichier_menu.add(action_ouvrir_un_graphe);
             fichier_menu.addSeparator();
@@ -860,6 +961,7 @@ public class MainClass extends PApplet {
             // --------------------------------------------------------------
 
 
+            /**/
             frame.setVisible(true);
         }
 
@@ -875,6 +977,8 @@ public class MainClass extends PApplet {
             } else if (src == action_ajouter_une_arete) {
                 System.out.println("Ajouter une nouvelle arête");
 
+                /* Création d'une instance de Dialog, avec tout les parametres qui vont avec, tant que l'utilisateur n'aura pas
+                * cliqué sur OK ou qu'il aura cliqué sur annuler le code attend a ce niveau*/
                 Dialog dial = new Dialog<Integer, Integer, Float>(
                         "Nouvelle arête",
                         "Sommet de départ de l'arête :",
@@ -884,6 +988,7 @@ public class MainClass extends PApplet {
                         Integer.class,
                         Float.class);
 
+                /* On réculère les valeurs que l'utilisateur a rentré*/
                 if (dial.getA() != null && dial.getB() != null && dial.getC() != null) {
                     int a = (int)dial.getA();
                     int b = (int)dial.getB();
@@ -917,12 +1022,51 @@ public class MainClass extends PApplet {
 
         }
 
+        /* Je rend cliquable ou pas les boutons du menu Graphe, en effet, si il n'existe pas de graphe, rien ne sert
+        * d'ajouter une arete ou un sommet, encore moins d'essayer d'en supprimer un*/
         public void grapheClickabke(boolean b){
             action_ajouter_une_arete.setEnabled(b);
             action_ajouter_un_sommet.setEnabled(b);
             action_supprimer_une_arete.setEnabled(b);
             action_supprimer_un_sommet.setEnabled(b);
             action_modifier_une_arete.setEnabled(b);
+        }
+    }
+
+
+    /* Petite classe me permettant de mettre mon curseur sur un champs de texte
+    * Je l'utilise pour régler un petit problème de ma fenetre de Dialogue, je voulais que mon curseur sois dirrectement
+    * dans la première cellule quand j'ouvre une fenetre*/
+    public static class FocusRequest implements AncestorListener {
+
+        private boolean removeListener;
+
+        public FocusRequest() {
+            this(true);
+        }
+
+        public FocusRequest(boolean removeListener) {
+            this.removeListener = removeListener;
+        }
+
+        @Override
+        public void ancestorAdded(AncestorEvent e) {
+            JComponent component = e.getComponent();
+            component.requestFocusInWindow();
+
+            if (removeListener) {
+                component.removeAncestorListener(this);
+            }
+        }
+
+        @Override
+        public void ancestorMoved(AncestorEvent e) {
+
+        }
+
+        @Override
+        public void ancestorRemoved(AncestorEvent e) {
+
         }
     }
 }
