@@ -1,4 +1,6 @@
 import processing.core.PApplet;
+
+import javax.lang.model.type.NullType;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -13,6 +15,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import java.lang.Integer;
 
 public class MainClass extends PApplet {
 
@@ -73,15 +76,22 @@ public class MainClass extends PApplet {
 
                 JPanel text = new JPanel(new GridLayout(0,1,2,2));
 
-                text.add(new JLabel(a, SwingConstants.RIGHT));
-                text.add(new JLabel(b, SwingConstants.RIGHT));
-                text.add(new JLabel(c, SwingConstants.RIGHT));
-
-
                 JPanel field = new JPanel(new GridLayout(0,1,2,2));
-                field.add(xField);
-                field.add(yField);
-                field.add(zField);
+
+                if (!aType.isAssignableFrom(NullType.class)) {
+                    text.add(new JLabel(a, SwingConstants.RIGHT));
+                    field.add(xField);
+                }
+
+                if (!bType.isAssignableFrom(NullType.class)) {
+                    text.add(new JLabel(b, SwingConstants.RIGHT));
+                    field.add(yField);
+                }
+
+                if (!cType.isAssignableFrom(NullType.class)) {
+                    text.add(new JLabel(c, SwingConstants.RIGHT));
+                    field.add(zField);
+                }
 
                 // Si l'utilisateur a mal rempli les champs de texte, un message d'erreur s'affiche sur la fenetre
                 if (ok == 2) {
@@ -117,10 +127,10 @@ public class MainClass extends PApplet {
                 * une nouvelle fenetre*/
                 xField.addAncestorListener(new FocusRequest(true));
 
-
                 /* Si l'utilisateur clique sur OK je vérifie que ce qu'il a rentré concorde avec les types que mon code a besoin*/
                 if (result == JOptionPane.OK_OPTION) {
                     try {
+
                         if (aType.isAssignableFrom(Integer.class)) {
                             /* ici par exemple, dans le cas ou aType = Integer.class, j'essaye de convertir la valeur
                             * du premier champs de texte en un entier, si ça ne fonctionne pas, ceci vas générer une erreur
@@ -128,7 +138,7 @@ public class MainClass extends PApplet {
                             aV = (A) Integer.valueOf(xField.getText());
                         } else if(aType.isAssignableFrom(String.class)) {
                             aV = (A) xField.getText();
-                        } else if(cType.isAssignableFrom(Float.class)) {
+                        } else if(aType.isAssignableFrom(Float.class)) {
                             aV = (A) Float.valueOf(xField.getText());
                         } else {
                             ok = 2;
@@ -138,7 +148,7 @@ public class MainClass extends PApplet {
                             bV = (B) Integer.valueOf(yField.getText());
                         } else if(bType.isAssignableFrom(String.class)) {
                             bV = (B) yField.getText();
-                        } else if(cType.isAssignableFrom(Float.class)) {
+                        } else if(bType.isAssignableFrom(Float.class)) {
                             bV = (B) Float.valueOf(yField.getText());
                         } else {
                             ok = 2;
@@ -165,6 +175,7 @@ public class MainClass extends PApplet {
                     /* Si jamais l'utilisateur clique sur Annuler, ok prend la valeur 1 et me permet de ne pas réouvrir une fenetre*/
                     ok = 1;
                 }
+
             }
 
         }
@@ -531,6 +542,32 @@ public class MainClass extends PApplet {
             this.aretes.add(nouvelle_arete);
         }
 
+        public void addArete(int a, int b){
+
+
+            Dialog dial = new Dialog<Float, NullType, NullType>(
+                    "Nouvelle arête",
+                    "Coût de l'arête :",
+                    "",
+                    "",
+                    Float.class,
+                    NullType.class,
+                    NullType.class);
+
+            /* On réculère les valeurs que l'utilisateur a rentré*/
+            if (dial.getA() != null) {
+                float c = (float)dial.getA();
+
+                this.addArete(a, b, c);
+            }
+
+
+
+
+
+
+        }
+
         /* Dessine le graphe en appelant les méthodes draw de tout les sommets et aretes du graphe*/
         public void draw(){
             // on règle un petit problème rapidement
@@ -547,6 +584,14 @@ public class MainClass extends PApplet {
                 aretes.get(i).draw(this);
             }
         }
+
+        public int getAmountOfSommets(){
+            return this.sommets.size();
+        }
+
+        public int getAmountOfAretes(){
+            return this.aretes.size();
+        }
     }
 
 
@@ -554,6 +599,7 @@ public class MainClass extends PApplet {
     JFrame frame;
     UIManager ui_manager;
     GrapheManager graphe_manager;
+    Debuger debuger;
 
     Cursor hand_corsor = new Cursor(Cursor.HAND_CURSOR);
     Cursor normal_cursor = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -574,8 +620,6 @@ public class MainClass extends PApplet {
 
     public void mouseReleased(){
         index_sommet_holded = -1;
-        index_second_sommet_to_dock_if_released = -1;
-        in_search_of_top_to_dock = false;
     }
 
 
@@ -587,14 +631,13 @@ public class MainClass extends PApplet {
 
         nf.setMaximumFractionDigits(2);
 
-
-
         /* Créé une nouvelle instance de UIManager, me permettant de gérer l'interface graphique du programme*/
         ui_manager = new UIManager();
 
         /* Créé une nouvelle instance de GrapheManager, me permettant de gérer mes graphes*/
         graphe_manager = new GrapheManager();
 
+        debuger = new Debuger();
     }
 
 
@@ -617,12 +660,7 @@ public class MainClass extends PApplet {
 
         ui_manager.draw();
         graphe_manager.drawCurentGraphe();
-
-        fill(255);
-        textAlign(LEFT);
-        text(nf.format(frameRate) + " fps", 20, 50);
-        text(nf.format(((curentMemoryUsed-startMemoryUsed)/1000000.0)) + " Mo", 20,70);
-        text(nf.format(((curentMemoryUsed/1000000.0))) + " Mo", 20,90);
+        debuger.draw();
     }
 
 
@@ -784,6 +822,18 @@ public class MainClass extends PApplet {
 
                 arrowHead(x1, y1, x2, y2);
                 line(x1, y1, x2, y2);
+            } else if (in_search_of_top_to_dock && index_second_sommet_to_dock_if_released != -1 && index_first_sommet_to_dock_if_released != -1){
+                System.out.println("Création de l'arete !");
+
+                graphe_manager.getCurentGraphe().addArete(index_first_sommet_to_dock_if_released, index_second_sommet_to_dock_if_released);
+
+                in_search_of_top_to_dock = false;
+                index_second_sommet_to_dock_if_released = -1;
+                index_first_sommet_to_dock_if_released = -1;
+            } else  if (in_search_of_top_to_dock){
+                in_search_of_top_to_dock = false;
+                index_second_sommet_to_dock_if_released = -1;
+                index_first_sommet_to_dock_if_released = -1;
             }
         }
 
@@ -825,6 +875,7 @@ public class MainClass extends PApplet {
         private JMenuItem action_modifier_une_arete;
 
         private JMenuItem action_theme;
+        private JMenuItem action_activer_debogueur;
 
         private JMenuItem action_mise_a_jour;
         private JMenuItem action_documentation;
@@ -941,10 +992,14 @@ public class MainClass extends PApplet {
             // --------------------------------------------------------------
 
             action_theme = new JMenuItem("Theme");
+            action_activer_debogueur = new JMenuItem("Activer le Débogueur");
 
             action_theme.addActionListener(this);
+            action_activer_debogueur.addActionListener(this);
 
             preference_menu.add(action_theme);
+            preference_menu.addSeparator();
+            preference_menu.add(action_activer_debogueur);
 
             // --------------------------------------------------------------
 
@@ -974,7 +1029,9 @@ public class MainClass extends PApplet {
                 graphe_manager.getCurentGraphe().addSommet();
 
 
-            } else if (src == action_ajouter_une_arete) {
+            }
+
+            else if (src == action_ajouter_une_arete) {
                 System.out.println("Ajouter une nouvelle arête");
 
                 /* Création d'une instance de Dialog, avec tout les parametres qui vont avec, tant que l'utilisateur n'aura pas
@@ -998,26 +1055,49 @@ public class MainClass extends PApplet {
                 }
 
 
-            } else if (src == action_supprimer_une_arete) {
+            }
+
+            else if (src == action_supprimer_une_arete) {
                 System.out.println("Supprimer une arête");
 
 
-            } else if (src == action_supprimer_un_sommet) {
+            }
+
+            else if (src == action_supprimer_un_sommet) {
                 System.out.println("Supprimer un sommet");
 
 
-            } else if (src == action_calcul_matrice_transitive) {
+            }
+
+            else if (src == action_calcul_matrice_transitive) {
                 System.out.println("Calcul de la matrice transitive");
 
 
-            } else if (src == action_calcul_matrice_adjacente) {
+            }
+
+            else if (src == action_calcul_matrice_adjacente) {
                 System.out.println("Calcul de la matrice adjacente");
 
 
-            } else if (src == action_quitter) {
+            }
+
+            else if (src == action_quitter) {
                 exit();
-            } else if (src == action_nouveau_graphe) {
+            }
+
+            else if (src == action_nouveau_graphe) {
                 graphe_manager.newGraphe();
+            }
+
+            else if (src == action_activer_debogueur){
+                if(!debuger.isActive){
+                    debuger.enableDebuger();
+                    action_activer_debogueur.setText("Désactiver le Debogueur");
+                } else {
+                    debuger.disableDebuger();
+                    action_activer_debogueur.setText("Activer le Débogueur");
+                }
+
             }
 
         }
@@ -1067,6 +1147,45 @@ public class MainClass extends PApplet {
         @Override
         public void ancestorRemoved(AncestorEvent e) {
 
+        }
+    }
+
+    public class Debuger {
+        public boolean isActive = false;
+
+        public Debuger(){
+
+        }
+
+        public void disableDebuger(){
+            this.isActive = false;
+        }
+
+        public void enableDebuger(){
+            this.isActive = true;
+        }
+
+        public void draw(){
+            if (this.isActive){
+
+                fill(255);
+                textAlign(LEFT);
+
+                text("fps : " + nf.format(frameRate), 20, 50);
+                text("Mémoire utilisée (pgrm) : " + nf.format(((curentMemoryUsed-startMemoryUsed)/1000000.0)) + " Mo", 20,50 + 20);
+                text("Mémoire utilisée (total) : " + nf.format(((curentMemoryUsed/1000000.0))) + " Mo", 20,50 + 20 *2);
+
+                text("Sommet Survolé : " + Integer.toString(index_sommet_hover), 20, 50 + 20 *3);
+                text("Sommet sélectionné : " + Integer.toString(index_sommet_holded), 20, 50 + 20 *4);
+                text("En train de relier des sommets ? : " + Boolean.toString(in_search_of_top_to_dock), 20, 50 + 20 *5);
+                text("1er Sommet à relier : " + Integer.toString(index_first_sommet_to_dock_if_released), 20, 50 + 20 *6);
+                text("2nd Sommet à relier : " + Integer.toString(index_second_sommet_to_dock_if_released), 20, 50 + 20 *7);
+                text("Onglet Survolé : " + Integer.toString(index_onglet_hover), 20, 50 + 20 *8);
+
+                text("Nombre de Sommets : " + Integer.toString(graphe_manager.getCurentGraphe().getAmountOfSommets()), 20, 50 + 20 *10);
+                text("Nombre d'Aretes' : " + Integer.toString(graphe_manager.getCurentGraphe().getAmountOfAretes()), 20, 50 + 20 *11);
+
+            }
         }
     }
 }
