@@ -499,8 +499,16 @@ public class MainClass extends PApplet {
                 msg = msg + " - " + this.name;
             }
 
+            if (in_search_of_top_to_dock){
+                stroke(255);
+                strokeWeight(3);
+            }
+
             text(msg, this.posX, this.posY - 8);
             ellipse(this.posX, this.posY, 5, 5);
+
+            noStroke();
+            strokeWeight(1);
         }
     }
 
@@ -511,14 +519,23 @@ public class MainClass extends PApplet {
         private String name;
         private Liste<Arete> aretes;
         private Liste<Sommet> sommets;
+        private int type;
+
+        public static final int     ORIENTE             = 1;
+        public static final int     ORIENTE_PONDERE     = 2;
+        public static final int     ORIENTE_LIBELE      = 3;
+        public static final int     NON_ORIENTE         = 4;
+        public static final int     NON_ORIENTE_PONDERE = 5;
+        public static final int     NON_ORIENTE_LIBELE  = 6;
 
 
         /* Chaques graphes créé est nomé par défaut "nouveau graphe"
         * j'instancie les listes de sommets et d'aretes*/
-        public Graphe(){
+        public Graphe(int i){
             this.name = "Nouveau Graphe";
             this.aretes = new Liste<Arete>();
             this.sommets = new Liste<Sommet>();
+            this.type = i;
         }
 
         public String getName(){
@@ -654,10 +671,6 @@ public class MainClass extends PApplet {
         textSize(12);
         background(40,41,35);
 
-        fill(255);
-        textAlign(RIGHT);
-        text("Réalisé par Gabriel Blanchot et Maxime Boissout", width - 5, height - 30);
-
         ui_manager.draw();
         graphe_manager.drawCurentGraphe();
         debuger.draw();
@@ -676,8 +689,8 @@ public class MainClass extends PApplet {
         }
 
         //Créé un nouveau graphe et le met en onglet principal
-        public void newGraphe(){
-            this.graphes.add(new Graphe());
+        public void newGraphe(int i){
+            this.graphes.add(new Graphe(i));
             curent_graphe = graphe_amount + 1;
             graphe_amount ++;
         }
@@ -730,8 +743,30 @@ public class MainClass extends PApplet {
 
         /* Dessine les onglets ainsi que les aretes en cours de création avec le clic droit de la souris*/
         public void draw(){
-            afficherOnglets();
-            afficherAretesEnCourDeCreation();
+            this.afficherOnglets();
+            this.afficherAretesEnCourDeCreation();
+            this.afficherPiedDePage();
+        }
+
+        private void afficherPiedDePage() {
+            noStroke();
+            textSize(10);
+            rectMode(CORNER);
+            fill(20, 20, 17);
+            rect(0, height-20-menu.getHeight(), width, 20);
+
+            fill(255);
+            textAlign(RIGHT);
+            text("Réalisé par Gabriel Blanchot et Maxime Boissout", width - 5, height - menu.getHeight()-7);
+
+
+            textAlign(LEFT);
+            if (graphe_manager.getCurentGraphe() != null){
+                text("Sommets : " + Integer.toString(graphe_manager.getCurentGraphe().getAmountOfSommets())
+                        + ", Aretes : " + Integer.toString(graphe_manager.getCurentGraphe().getAmountOfAretes()), 5, height - menu.getHeight()-7);
+            }
+            textSize(10);
+            textAlign(CENTER);
         }
 
         /* Dessine les onglets*/
@@ -838,7 +873,7 @@ public class MainClass extends PApplet {
         }
 
         /* Méthode pour dessiner le triangle en bout de ligne pour faire une fleche */
-        public void arrowHead(int xA, int yA, int xB, int yB) {
+        private void arrowHead(int xA, int yA, int xB, int yB) {
             float size = 4;
             pushMatrix();
             translate(xB, yB);
@@ -853,9 +888,16 @@ public class MainClass extends PApplet {
     /* Classe régissant la création de la barre de menu suppérieure*/
     public class Menu extends JFrame implements ActionListener {
 
+        private int height = 0;
 
         /* Déclaration de tout les élèments de mon menu*/
-        private JMenuItem action_nouveau_graphe;
+        private JMenuItem action_nouveau_graphe_oriente;
+        private JMenuItem action_nouveau_graphe_oriente_pondere;
+        private JMenuItem action_nouveau_graphe_oriente_etiquete;
+        private JMenuItem action_nouveau_graphe_non_oriente;
+        private JMenuItem action_nouveau_graphe_non_oriente_pondere;
+        private JMenuItem action_nouveau_graphe_non_oriente_etiquete;
+
         private JMenuItem action_ouvrir_un_graphe;
         private JMenuItem action_fermer_ce_graphe;
         private JMenuItem action_fermer_tout_les_graphes;
@@ -886,6 +928,7 @@ public class MainClass extends PApplet {
         public Menu() {
 
             frame.setLocationRelativeTo(null);
+            frame.setMinimumSize(new Dimension(305,200));
             JMenuBar barre = new JMenuBar();
 
             frame.setJMenuBar(barre);
@@ -914,7 +957,12 @@ public class MainClass extends PApplet {
             /* Un menu (fichier par exemple ) peux comporter d'autres menu, ou simplement il peux comporter les "boutons"
             * qui exécuterons des taches (les JMenuItem)
             * Ici on défini ceux du menu Fichier*/
-            action_nouveau_graphe = new JMenuItem("Nouveau Graphe");
+            action_nouveau_graphe_oriente = new JMenuItem("Nouveau Graphe Orienté");
+            action_nouveau_graphe_oriente_pondere = new JMenuItem("Nouveau Graphe Orienté Pondéré");
+            action_nouveau_graphe_oriente_etiquete = new JMenuItem("Nouveau Graphe Orienté Étiqueté");
+            action_nouveau_graphe_non_oriente = new JMenuItem("Nouveau Graphe Non Orienté");
+            action_nouveau_graphe_non_oriente_pondere = new JMenuItem("Nouveau Graphe Non Orienté Pondéré");
+            action_nouveau_graphe_non_oriente_etiquete = new JMenuItem("Nouveau Graphe Non Orienté Étiqueté");
             action_ouvrir_un_graphe = new JMenuItem("Ouvrir un Graphe");
             action_fermer_ce_graphe = new JMenuItem("Fermer ce Graphe");
             action_fermer_tout_les_graphes = new JMenuItem("Fermer tout les Graphes");
@@ -925,7 +973,7 @@ public class MainClass extends PApplet {
             /* Puis on leur ajoute un écouteur, si une action est recensé sur un de ces boutons (si un bouton est cliqué)
             * alors la méthode ActionPerformed (plus bas) sera exécutée et aura en parametre le bouton qui aura été cliqué
             * nous pourrons alors exécuter l'action correspondante au bouton*/
-            action_nouveau_graphe.addActionListener(this);
+            action_nouveau_graphe_oriente.addActionListener(this);
             action_ouvrir_un_graphe.addActionListener(this);
             action_fermer_ce_graphe.addActionListener(this);
             action_fermer_tout_les_graphes.addActionListener(this);
@@ -934,7 +982,14 @@ public class MainClass extends PApplet {
             action_quitter.addActionListener(this);
 
             /* Ici on met en forme le menu, on ajoute quelques séparateurs pour l'estétique*/
-            fichier_menu.add(action_nouveau_graphe);
+            fichier_menu.add(action_nouveau_graphe_oriente);
+            fichier_menu.add(action_nouveau_graphe_oriente_pondere);
+            fichier_menu.add(action_nouveau_graphe_oriente_etiquete);
+            fichier_menu.addSeparator();
+            fichier_menu.add(action_nouveau_graphe_non_oriente);
+            fichier_menu.add(action_nouveau_graphe_non_oriente_pondere);
+            fichier_menu.add(action_nouveau_graphe_non_oriente_etiquete);
+            fichier_menu.addSeparator();
             fichier_menu.add(action_ouvrir_un_graphe);
             fichier_menu.addSeparator();
             fichier_menu.add(action_fermer_ce_graphe);
@@ -1018,6 +1073,12 @@ public class MainClass extends PApplet {
 
             /**/
             frame.setVisible(true);
+
+            this.height = barre.getHeight();
+        }
+
+        public int getHeight(){
+            return this.height;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -1085,8 +1146,8 @@ public class MainClass extends PApplet {
                 exit();
             }
 
-            else if (src == action_nouveau_graphe) {
-                graphe_manager.newGraphe();
+            else if (src == action_nouveau_graphe_oriente) {
+                graphe_manager.newGraphe(Graphe.ORIENTE);
             }
 
             else if (src == action_activer_debogueur){
@@ -1181,10 +1242,6 @@ public class MainClass extends PApplet {
                 text("1er Sommet à relier : " + Integer.toString(index_first_sommet_to_dock_if_released), 20, 50 + 20 *6);
                 text("2nd Sommet à relier : " + Integer.toString(index_second_sommet_to_dock_if_released), 20, 50 + 20 *7);
                 text("Onglet Survolé : " + Integer.toString(index_onglet_hover), 20, 50 + 20 *8);
-
-                text("Nombre de Sommets : " + Integer.toString(graphe_manager.getCurentGraphe().getAmountOfSommets()), 20, 50 + 20 *10);
-                text("Nombre d'Aretes' : " + Integer.toString(graphe_manager.getCurentGraphe().getAmountOfAretes()), 20, 50 + 20 *11);
-
             }
         }
     }
