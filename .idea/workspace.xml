@@ -2,7 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="48df8484-a7aa-4f41-87ea-27e0d2c5ddd2" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.floo" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.flooignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Arete.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Arete.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Dialog.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Dialog.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Graphe.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Graphe.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$GrapheManager.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/MI - 01/MainClass$GrapheManager.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Liste.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Liste.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Sommet.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Sommet.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$UIManager.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/MI - 01/MainClass$UIManager.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/MI - 01/MainClass.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MainClass.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MainClass.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -21,13 +31,16 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1ZT3AtuS9DsUci3fLVBftIuMfCo" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$USER_HOME$/Desktop/processing-3.5.3/core/library/core.jar!/" />
@@ -36,7 +49,7 @@
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Color Scheme Font" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RunManager" selected="Application.MainClass (1)">
     <configuration name="MainClass (1)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
@@ -125,15 +138,24 @@
       <option name="project" value="LOCAL" />
       <updated>1585011030249</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Amélioration du moyen d'agrandir l'élipse des sommets lors d'un ajout rapide d'arete&#10;Implémentation partielle de nouveaux types de graphes&#10;Ajout d'un pied de page pour l'affichage d'information">
+      <created>1585113357918</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1585113357919</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="MAJ" />
     <MESSAGE value="Implémentation partielle de la fonctionalité d'ajout d'arrete rapide" />
     <MESSAGE value="Ajout des commentaires ..." />
     <MESSAGE value="Amélioration de la classe Dialog&#10;Implémentation totale de la fonctionnalité d'ajout rapide d'arete&#10;Ajout d'une classe débuger" />
-    <option name="LAST_COMMIT_MESSAGE" value="Amélioration de la classe Dialog&#10;Implémentation totale de la fonctionnalité d'ajout rapide d'arete&#10;Ajout d'une classe débuger" />
+    <MESSAGE value="Amélioration du moyen d'agrandir l'élipse des sommets lors d'un ajout rapide d'arete&#10;Implémentation partielle de nouveaux types de graphes&#10;Ajout d'un pied de page pour l'affichage d'information" />
+    <option name="LAST_COMMIT_MESSAGE" value="Amélioration du moyen d'agrandir l'élipse des sommets lors d'un ajout rapide d'arete&#10;Implémentation partielle de nouveaux types de graphes&#10;Ajout d'un pied de page pour l'affichage d'information" />
   </component>
   <component name="WindowStateProjectService">
     <state x="714" y="408" key="#com.intellij.ide.actions.ChooseComponentsToExportDialog" timestamp="1584850196979">
@@ -152,33 +174,33 @@
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="707" y="395" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1584899369599" />
-    <state x="614" y="0" width="1158" height="952" key="CommitChangelistDialog2" timestamp="1585011029334">
+    <state x="614" y="0" width="1158" height="952" key="CommitChangelistDialog2" timestamp="1585349126166">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state x="614" y="0" width="1158" height="952" key="CommitChangelistDialog2/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585011029334" />
+    <state x="614" y="0" width="1158" height="952" key="CommitChangelistDialog2/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585349126166" />
     <state x="666" y="280" key="FileChooserDialogImpl" timestamp="1584850193984">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="666" y="280" key="FileChooserDialogImpl/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1584850193984" />
-    <state width="1876" height="179" key="GridCell.Tab.0.bottom" timestamp="1585113138491">
+    <state width="1876" height="179" key="GridCell.Tab.0.bottom" timestamp="1585194953773">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1876" height="179" key="GridCell.Tab.0.bottom/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585113138491" />
+    <state width="1876" height="179" key="GridCell.Tab.0.bottom/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585194953773" />
     <state width="1860" height="149" key="GridCell.Tab.0.bottom/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@1920.0.1920.1080" timestamp="1584849626277" />
-    <state width="1876" height="179" key="GridCell.Tab.0.center" timestamp="1585113138491">
+    <state width="1876" height="179" key="GridCell.Tab.0.center" timestamp="1585194953773">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1876" height="179" key="GridCell.Tab.0.center/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585113138491" />
+    <state width="1876" height="179" key="GridCell.Tab.0.center/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585194953773" />
     <state width="1860" height="149" key="GridCell.Tab.0.center/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@1920.0.1920.1080" timestamp="1584849626277" />
-    <state width="1876" height="179" key="GridCell.Tab.0.left" timestamp="1585113138491">
+    <state width="1876" height="179" key="GridCell.Tab.0.left" timestamp="1585194953773">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1876" height="179" key="GridCell.Tab.0.left/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585113138491" />
+    <state width="1876" height="179" key="GridCell.Tab.0.left/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585194953773" />
     <state width="1860" height="149" key="GridCell.Tab.0.left/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@1920.0.1920.1080" timestamp="1584849626277" />
-    <state width="1876" height="179" key="GridCell.Tab.0.right" timestamp="1585113138491">
+    <state width="1876" height="179" key="GridCell.Tab.0.right" timestamp="1585194953773">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1876" height="179" key="GridCell.Tab.0.right/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585113138491" />
+    <state width="1876" height="179" key="GridCell.Tab.0.right/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585194953773" />
     <state width="1860" height="149" key="GridCell.Tab.0.right/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@1920.0.1920.1080" timestamp="1584849626277" />
     <state width="1876" height="244" key="GridCell.Tab.1.bottom" timestamp="1584856028110">
       <screen x="0" y="0" width="1920" height="1080" />
@@ -196,14 +218,14 @@
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1876" height="244" key="GridCell.Tab.1.right/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1584856028110" />
-    <state x="800" y="110" key="SettingsEditor" timestamp="1584851027925">
+    <state x="800" y="110" key="SettingsEditor" timestamp="1585331445353">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state x="800" y="110" key="SettingsEditor/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1584851027925" />
-    <state x="552" y="272" key="Vcs.Push.Dialog.v2" timestamp="1585011037617">
+    <state x="800" y="110" key="SettingsEditor/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585331445353" />
+    <state x="552" y="272" key="Vcs.Push.Dialog.v2" timestamp="1585113364526">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state x="552" y="272" key="Vcs.Push.Dialog.v2/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585011037617" />
+    <state x="552" y="272" key="Vcs.Push.Dialog.v2/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585113364526" />
     <state x="769" y="456" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1584899875845">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>

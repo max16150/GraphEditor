@@ -609,6 +609,28 @@ public class MainClass extends PApplet {
         public int getAmountOfAretes(){
             return this.aretes.size();
         }
+
+        public int getType(){
+            return this.type;
+        }
+
+        public String getStringType(){
+            switch (this.type){
+                case 1:
+                    return "Graphe Orienté";
+                case 2:
+                    return "Graphe Orienté Pondéré";
+                case 3:
+                    return "Graphe Orienté Libelé";
+                case 4:
+                    return "Graphe Non Orienté";
+                case 5:
+                    return "Graphe Non Orienté Pondéré";
+                case 6:
+                    return "Graphe Non Orienté Libelé";
+            }
+            return "c'est bizare si ça sort ça mdrr";
+        }
     }
 
 
@@ -928,7 +950,7 @@ public class MainClass extends PApplet {
         public Menu() {
 
             frame.setLocationRelativeTo(null);
-            frame.setMinimumSize(new Dimension(305,200));
+            frame.setMinimumSize(new Dimension(390,200));
             JMenuBar barre = new JMenuBar();
 
             frame.setJMenuBar(barre);
