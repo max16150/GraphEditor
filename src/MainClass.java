@@ -718,6 +718,7 @@ public class MainClass extends PApplet {
 
     }
 
+
     public void draw(){
         if (mouseButton == LEFT){
             in_search_of_top_to_dock = false;
@@ -816,7 +817,7 @@ public class MainClass extends PApplet {
 
         private void drawRandom() {
             textSize(12);
-            String str = "ah bah oui ça fonctionne mieux tout de suite mdrr";
+            String str = "50";
             float largeur_du_texte = ((SunGraphics2D) g.getNative()).getFontMetrics().stringWidth(str);
 
             rectMode(CORNER);
