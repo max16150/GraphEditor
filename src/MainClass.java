@@ -1,5 +1,19 @@
-import processing.core.PApplet;
+/*
+* Certaines variables, méthodes, et fonctions ont étés extraites des classes internes de processing qui ne sont pas dans la documentation.
+* Nous avons utilisé IntelliJ IDEA pour coder ce programme, il nous a permis de comprendre la mécanique interne de processing grace a ses outils
+* de recherche.
+*
+*
+* */
 
+
+
+import processing.core.PApplet;
+import processing.core.PFont;
+import processing.core.PGraphics;
+import sun.java2d.SunGraphics2D;
+
+import java.awt.Graphics;
 import javax.lang.model.type.NullType;
 import javax.swing.*;
 import java.awt.*;
@@ -298,12 +312,12 @@ public class MainClass extends PApplet {
         /* Prend en variable de classe le numéro de son sommet de départ ainsi que de fin et une valeur propre a l'instance*/
         private int sommet_initial;
         private int sommet_final;
-        private float cout;
+        private float poid;
 
         public Arete(int i, int f, float c){
             this.sommet_initial = i;
             this.sommet_final = f;
-            this.cout = c;
+            this.poid = c;
         }
 
         public int getInitial(){
@@ -314,8 +328,8 @@ public class MainClass extends PApplet {
             return this.sommet_final;
         }
 
-        public float getCout(){
-            return this.cout;
+        public float getPoid(){
+            return this.poid;
         }
 
         public void setInitial(int i){
@@ -326,8 +340,8 @@ public class MainClass extends PApplet {
             this.sommet_final = f;
         }
 
-        public void setCout(float c){
-            this.cout = c;
+        public void setPoid(float c){
+            this.poid = c;
         }
 
         public void draw(Graphe g){
@@ -335,6 +349,7 @@ public class MainClass extends PApplet {
             stroke(255);
             Sommet sommetinitial = g.getSommet(this.sommet_initial);
             Sommet sommetfinal = g.getSommet(this.sommet_final);
+            int type = g.getType();
 
             if (this.sommet_initial != this.sommet_final) {
                 /* Dans le cas ou l'arete lie deux sommets différents je dessine une ligne et un petit triangle au bout*/
@@ -357,16 +372,23 @@ public class MainClass extends PApplet {
                 int x2 = (int)(xA - ((distAB-ecart)*(xA-xB)/distAB));
                 int y2 = (int)(yA + ((distAB-ecart)*(yB-yA)/distAB));
 
-                this.arrowHead(x1, y1, x2, y2);
                 line(x1, y1, x2, y2);
-            } else {
+
+                if (type == Graphe.ORIENTE || type == Graphe.ORIENTE_LIBELE || type == Graphe.ORIENTE_PONDERE){
+                    this.arrowHead(x1, y1, x2, y2);
+                }
+            }
+            else {
                 /* Dans le cas ou l'arete lie le meme sommet, je dessine un arc de cercle ainsi que le triangle
                 * qui constitue le bout de ma fleche */
                 noFill();
                 arc(sommetinitial.getX() + 20, sommetinitial.getY(), 40, 40, PI+QUARTER_PI, TWO_PI+3*QUARTER_PI);
                 noStroke();
                 fill(255);
-                this.arrowHead(sommetinitial.getX() + 5, sommetinitial.getY() + 15, sommetinitial.getX()+ 1, sommetinitial.getY() + 7);
+
+                if (g.getType() == Graphe.ORIENTE || g.getType() == Graphe.ORIENTE_LIBELE || g.getType() == Graphe.ORIENTE_PONDERE){
+                    this.arrowHead(sommetinitial.getX() + 5, sommetinitial.getY() + 15, sommetinitial.getX()+ 1, sommetinitial.getY() + 7);
+                }
             }
             noStroke();
         }
@@ -487,7 +509,7 @@ public class MainClass extends PApplet {
 
                 frame.setCursor(move_cursor);
                 fill(255,0,0);
-                if (mouseX > margin && mouseY > margin && mouseX < width - margin && mouseY < height - margin - 20) {
+                if (mouseX > margin && mouseY > margin + 30 && mouseX < width - margin && mouseY < height - margin - 40) {
                     this.posX = mouseX;
                     this.posY = mouseY;
                 }
@@ -677,21 +699,31 @@ public class MainClass extends PApplet {
         graphe_manager = new GrapheManager();
 
         debuger = new Debuger();
+
+        //textSize(50);
+
+        //PFont temp = g.textFont;
+        //float tempsize = g.textSize;
+
+        //graphics = frame.getGraphics();
+        //graphics.setFont(baseFont);
+
+        //println(g.textFont.width('\n'));
+        //println(g.textFont.getSize());
+
+        //SunGraphics2D holo = ((SunGraphics2D) g.getNative()).getFontMetrics().stringWidth("coucou les loulou");
+
+        //println(graphics.getFontMetrics());
+        //((SunGraphics2D) g.getNative()).getFontMetrics().stringWidth("coucou les loulouu")
+
     }
 
-
     public void draw(){
-
         if (mouseButton == LEFT){
             in_search_of_top_to_dock = false;
             index_second_sommet_to_dock_if_released = -1;
             index_first_sommet_to_dock_if_released = -1;
         }
-
-        curentMemoryUsed = Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
-
-        textSize(12);
-        background(40,41,35);
 
         ui_manager.draw();
         graphe_manager.drawCurentGraphe();
@@ -758,6 +790,15 @@ public class MainClass extends PApplet {
 
     public class UIManager {
 
+        public int couleur_texte =                 color(255);
+        public int couleur_bandeau_supperieur =    color(24, 25, 21);
+        public int couleur_onglet_innactive =      color(32, 33, 28);
+        public int couleur_onglet_active =         color(40, 41, 35);
+        public int couleur_background =            color(40, 41, 35);
+        public int couleur_liseret_light =         color(70, 70, 70);
+        public int couleur_liseret_dark =          color(0);
+        public int couleur_bandeau_inferieur =     color(20, 20, 17);
+
         public UIManager(){
             /* Créé la barre de menu suppérieur de mon programme (Fichier Edition ...) */
             menu = new Menu();
@@ -765,21 +806,40 @@ public class MainClass extends PApplet {
 
         /* Dessine les onglets ainsi que les aretes en cours de création avec le clic droit de la souris*/
         public void draw(){
+            textSize(12);
+            curentMemoryUsed = Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
             this.afficherOnglets();
             this.afficherAretesEnCourDeCreation();
             this.afficherPiedDePage();
+            this.drawRandom();
+        }
+
+        private void drawRandom() {
+            textSize(12);
+            String str = "ah bah oui ça fonctionne mieux tout de suite mdrr";
+            float largeur_du_texte = ((SunGraphics2D) g.getNative()).getFontMetrics().stringWidth(str);
+
+            rectMode(CORNER);
+            textAlign(LEFT);
+            rect(50,50,largeur_du_texte, 5);
+            text(str, 50, 70);
+
         }
 
         private void afficherPiedDePage() {
             noStroke();
             textSize(10);
+
             rectMode(CORNER);
-            fill(20, 20, 17);
+            fill(couleur_bandeau_inferieur);
             rect(0, height-20-menu.getHeight(), width, 20);
 
-            fill(255);
+            fill(couleur_texte);
             textAlign(RIGHT);
             text("Réalisé par Gabriel Blanchot et Maxime Boissout", width - 5, height - menu.getHeight()-7);
+
+            stroke(couleur_liseret_light);
+            line(0,height-20-menu.getHeight(),width,height-20-menu.getHeight());
 
 
             textAlign(LEFT);
@@ -793,6 +853,9 @@ public class MainClass extends PApplet {
 
         /* Dessine les onglets*/
         private void afficherOnglets(){
+
+            background(couleur_background);
+
             int nombre_de_graphe = graphe_manager.getAmountOfGraphe();
 
             if (nombre_de_graphe <= 0) {
@@ -805,7 +868,7 @@ public class MainClass extends PApplet {
 
             noStroke();
             rectMode(CORNER);
-            fill(24, 25, 21);
+            fill(couleur_bandeau_supperieur);
             rect(0, 0, width, 35);
 
             /* Dessine autant d'onglet qu'il y a de graphes et prend soin de récupérer le nom de chaques
@@ -814,14 +877,14 @@ public class MainClass extends PApplet {
             for (int i = 0; i < nombre_de_graphe; i++) {
 
                 if (graphe_manager.getNumberOfCurentGrahe()-1 == i) {
-                    fill(40, 41, 35);
+                    fill(couleur_onglet_active);
                 } else {
-                    fill(32, 33, 28);
+                    fill(couleur_onglet_innactive);
                 }
 
                 rect(10 + i*largeur_onglet, 5, largeur_onglet, 30, 10, 10, 0, 0);
                 textAlign(LEFT);
-                fill(255);
+                fill(couleur_texte);
                 textSize(12);
                 text(graphe_manager.getGraphe(i).getName(), 10 + i*largeur_onglet + 10, 25);
 
@@ -898,9 +961,9 @@ public class MainClass extends PApplet {
         private void arrowHead(int xA, int yA, int xB, int yB) {
             float size = 4;
             pushMatrix();
-            translate(xB, yB);
-            rotate(atan2(yB - yA, xB - xA));
-            triangle(- size * 2 , - size, 0, 0, - size * 2, size);
+                translate(xB, yB);
+                rotate(atan2(yB - yA, xB - xA));
+                triangle(- size * 2 , - size, 0, 0, - size * 2, size);
             popMatrix();
         }
 
