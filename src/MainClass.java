@@ -9,11 +9,8 @@
 
 
 import processing.core.PApplet;
-import processing.core.PFont;
-import processing.core.PGraphics;
 import sun.java2d.SunGraphics2D;
 
-import java.awt.Graphics;
 import javax.lang.model.type.NullType;
 import javax.swing.*;
 import java.awt.*;
@@ -207,6 +204,7 @@ public class MainClass extends PApplet {
         }
     }
 
+
     /* Ma classe Liste codée en début de semestre, elle est assez complète et me permet beaucoup d'action sur mes listes
     * Je peux faire une liste de nimporte quel Objet grace a la généricité
     * Je ferais par la suite des listes de Sommet Arete et Graphe*/
@@ -306,6 +304,7 @@ public class MainClass extends PApplet {
         }
     }
 
+
     /* Classe régissant une arete, plusieures méthodes me permettent une optimisation de lecture
     * l'affichage de l'arete est dirrectement implémenté dans cette classe avec la méthode draw()*/
     public class Arete{
@@ -313,11 +312,23 @@ public class MainClass extends PApplet {
         private int sommet_initial;
         private int sommet_final;
         private float poid;
+        private String libele;
 
         public Arete(int i, int f, float c){
             this.sommet_initial = i;
             this.sommet_final = f;
             this.poid = c;
+        }
+
+        public Arete(int i, int f, String libele){
+            this.sommet_initial = i;
+            this.sommet_final = f;
+            this.libele = libele;
+        }
+
+        public Arete(int i, int f){
+            this.sommet_initial = i;
+            this.sommet_final = f;
         }
 
         public int getInitial(){
@@ -332,6 +343,14 @@ public class MainClass extends PApplet {
             return this.poid;
         }
 
+        public String getLibele() {
+            return this.libele;
+        }
+
+        public void setLibele(String libele) {
+            this.libele = libele;
+        }
+
         public void setInitial(int i){
             this.sommet_initial = i;
         }
@@ -344,66 +363,27 @@ public class MainClass extends PApplet {
             this.poid = c;
         }
 
-        public void draw(Graphe g){
-            fill(255);
-            stroke(255);
+        public void draw(){
+
+            Graphe g = graphe_manager.getCurentGraphe();
+
             Sommet sommetinitial = g.getSommet(this.sommet_initial);
             Sommet sommetfinal = g.getSommet(this.sommet_final);
+
             int type = g.getType();
+            String str = "";
 
-            if (this.sommet_initial != this.sommet_final) {
-                /* Dans le cas ou l'arete lie deux sommets différents je dessine une ligne et un petit triangle au bout*/
-                int ecart = 15;
-
-                int xA = sommetinitial.getX();
-                int xB = sommetfinal.getX();
-
-                int yA = sommetinitial.getY();
-                int yB = sommetfinal.getY();
-
-                float distAB = dist(xA, yA, xB, yB);
-
-                /* Ces caculs me permettent de trouver les points d'ou faire partir la ligne asociée a l'arete
-                * je ne fais pas partir cette ligne tout a fais a l'emplacement du sommet, j'ai donc utilisé le
-                * théorème de thales pour trouver les coordonées de départ et de fin */
-                int x1 = (int)(xA - (ecart*(xA-xB)/distAB));
-                int y1 = (int)(yA + (ecart*(yB-yA)/distAB));
-
-                int x2 = (int)(xA - ((distAB-ecart)*(xA-xB)/distAB));
-                int y2 = (int)(yA + ((distAB-ecart)*(yB-yA)/distAB));
-
-                line(x1, y1, x2, y2);
-
-                if (type == Graphe.ORIENTE || type == Graphe.ORIENTE_LIBELE || type == Graphe.ORIENTE_PONDERE){
-                    this.arrowHead(x1, y1, x2, y2);
-                }
+            if (type == Graphe.ORIENTE_LIBELE || type == Graphe.NON_ORIENTE_LIBELE){
+                str = this.getLibele();
+            } else if (type == Graphe.ORIENTE_PONDERE || type == Graphe.NON_ORIENTE_PONDERE){
+                str = Float.toString(this.getPoid());
             }
-            else {
-                /* Dans le cas ou l'arete lie le meme sommet, je dessine un arc de cercle ainsi que le triangle
-                * qui constitue le bout de ma fleche */
-                noFill();
-                arc(sommetinitial.getX() + 20, sommetinitial.getY(), 40, 40, PI+QUARTER_PI, TWO_PI+3*QUARTER_PI);
-                noStroke();
-                fill(255);
 
-                if (g.getType() == Graphe.ORIENTE || g.getType() == Graphe.ORIENTE_LIBELE || g.getType() == Graphe.ORIENTE_PONDERE){
-                    this.arrowHead(sommetinitial.getX() + 5, sommetinitial.getY() + 15, sommetinitial.getX()+ 1, sommetinitial.getY() + 7);
-                }
-            }
-            noStroke();
+            ui_manager.afficherArete(sommetinitial,sommetfinal,str, g.getType());
+
         }
-
-        /* Ma méthode pour générer le triangle orienté en fonction de la ligne qui le précède*/
-        public void arrowHead(int xA, int yA, int xB, int yB) {
-            float size = 4;
-            pushMatrix();
-                translate(xB, yB);
-                rotate(atan2(yB - yA, xB - xA));
-                triangle(-size * 2, -size, 0, 0, -size * 2, size);
-            popMatrix();
-        }
-
     }
+
 
     /* Classe définissant les sommets*/
     public class Sommet{
@@ -414,6 +394,7 @@ public class MainClass extends PApplet {
         private int posX;
         private int posY;
         private String name;
+        int color;
 
         /* Trois constructeurs pour mes sommets*/
         /* un qui prend simplement un numéro de sommet
@@ -442,6 +423,14 @@ public class MainClass extends PApplet {
 
         public int getY(){
             return this.posY;
+        }
+
+        public int getColor() {
+            return this.color;
+        }
+
+        public void setColor(int color) {
+            this.color = color;
         }
 
         /* Méthode qui gère l'affichage des sommets*/
@@ -576,35 +565,61 @@ public class MainClass extends PApplet {
         }
 
         /* Ajoute une arrete a la liste des aretes du graphe*/
-        public void addArete(int a, int b, float cout){
-            Arete nouvelle_arete = new Arete(a, b, cout);
+        public void addArete(int a, int b, float poid){
+            Arete nouvelle_arete = new Arete(a, b, poid);
+            this.aretes.add(nouvelle_arete);
+        }
+
+        public void addArete(int a, int b, String libele){
+            Arete nouvelle_arete = new Arete(a, b, libele);
             this.aretes.add(nouvelle_arete);
         }
 
         public void addArete(int a, int b){
+            Arete nouvelle_arete = new Arete(a, b);
+            this.aretes.add(nouvelle_arete);
+        }
 
+        public void addAreteDialog(int a, int b){
+            int type = graphe_manager.getCurentGraphe().getType();
 
-            Dialog dial = new Dialog<Float, NullType, NullType>(
-                    "Nouvelle arête",
-                    "Coût de l'arête :",
-                    "",
-                    "",
-                    Float.class,
-                    NullType.class,
-                    NullType.class);
+            if (type == Graphe.NON_ORIENTE || type == Graphe.ORIENTE){
 
-            /* On réculère les valeurs que l'utilisateur a rentré*/
-            if (dial.getA() != null) {
-                float c = (float)dial.getA();
+                this.addArete(a, b);
 
-                this.addArete(a, b, c);
+            } else if (type == Graphe.ORIENTE_PONDERE || type == Graphe.NON_ORIENTE_PONDERE){
+                Dialog dial = new Dialog<Float, NullType, NullType>(
+                        "Nouvelle arête",
+                        "Poid de l'arête :",
+                        "",
+                        "",
+                        Float.class,
+                        NullType.class,
+                        NullType.class);
+
+                /* On réculère les valeurs que l'utilisateur a rentré*/
+                if (dial.getA() != null) {
+                    float c = (float)dial.getA();
+
+                    this.addArete(a, b, c);
+                }
+            } else if (type == Graphe.ORIENTE_LIBELE || type == Graphe.NON_ORIENTE_LIBELE){
+                Dialog dial = new Dialog<String, NullType, NullType>(
+                        "Nouvelle arête",
+                        "Libelé de l'arête :",
+                        "",
+                        "",
+                        String.class,
+                        NullType.class,
+                        NullType.class);
+
+                /* On réculère les valeurs que l'utilisateur a rentré*/
+                if (dial.getA() != null) {
+                    String c = (String)dial.getA();
+
+                    this.addArete(a, b, c);
+                }
             }
-
-
-
-
-
-
         }
 
         /* Dessine le graphe en appelant les méthodes draw de tout les sommets et aretes du graphe*/
@@ -620,7 +635,7 @@ public class MainClass extends PApplet {
             }
             // on affiche les aretes
             for (int i =0; i<aretes.size(); i++) {
-                aretes.get(i).draw(this);
+                aretes.get(i).draw();
             }
         }
 
@@ -737,7 +752,7 @@ public class MainClass extends PApplet {
         private int graphe_amount;
         private int curent_graphe;
 
-        GrapheManager(){
+        public GrapheManager(){
             this.graphes = new Liste<Graphe>();
             this.graphe_amount = 0;
             this.curent_graphe = 0;
@@ -812,7 +827,7 @@ public class MainClass extends PApplet {
             this.afficherOnglets();
             this.afficherAretesEnCourDeCreation();
             this.afficherPiedDePage();
-            this.drawRandom();
+            //this.drawRandom();
         }
 
         private void drawRandom() {
@@ -846,7 +861,8 @@ public class MainClass extends PApplet {
             textAlign(LEFT);
             if (graphe_manager.getCurentGraphe() != null){
                 text("Sommets : " + Integer.toString(graphe_manager.getCurentGraphe().getAmountOfSommets())
-                        + ", Aretes : " + Integer.toString(graphe_manager.getCurentGraphe().getAmountOfAretes()), 5, height - menu.getHeight()-7);
+                        + ", Aretes : " + Integer.toString(graphe_manager.getCurentGraphe().getAmountOfAretes())
+                        + "  -  " + graphe_manager.getCurentGraphe().getStringType(), 5, height - menu.getHeight()-7);
             }
             textSize(10);
             textAlign(CENTER);
@@ -912,46 +928,29 @@ public class MainClass extends PApplet {
         private void afficherAretesEnCourDeCreation(){
             if (mousePressed && mouseButton == RIGHT && in_search_of_top_to_dock){
 
-                fill(255);
-                stroke(255);
-                int ecart = 15;
-
-                /* Récupère les coordonées du point de départ ainsi que de la souri*/
-
-                int xA = graphe_manager.getCurentGraphe().getSommet(index_first_sommet_to_dock_if_released).getX();
-                int xB = mouseX;
-
-                int yA = graphe_manager.getCurentGraphe().getSommet(index_first_sommet_to_dock_if_released).getY();
-                int yB = mouseY;
-
-                /* Si jamais la souris survole un sommet, alors la fleche se dessine plus en fonction des
-                * coordonées de la souris mais en fonction des coordonées de ce sommet*/
                 if (index_second_sommet_to_dock_if_released != -1){
-                    xB = graphe_manager.getCurentGraphe().getSommet(index_second_sommet_to_dock_if_released).getX();
-                    yB = graphe_manager.getCurentGraphe().getSommet(index_second_sommet_to_dock_if_released).getY();
+                    this.afficherArete(
+                            graphe_manager.getCurentGraphe().getSommet(index_first_sommet_to_dock_if_released),
+                            graphe_manager.getCurentGraphe().getSommet(index_second_sommet_to_dock_if_released),
+                            "~#{[|`@]}",
+                            graphe_manager.getCurentGraphe().getType());
+                } else {
+                    this.afficherArete(
+                            graphe_manager.getCurentGraphe().getSommet(index_first_sommet_to_dock_if_released),
+                            null,
+                            "~#{[|`@]}",
+                            graphe_manager.getCurentGraphe().getType());
                 }
 
-                float distAB = dist(xA, yA, xB, yB);
 
-                /* Calcul des coordonées grace au théorème de thales*/
-
-                int x1 = (int)(xA - (ecart*(xA-xB)/distAB));
-                int y1 = (int)(yA + (ecart*(yB-yA)/distAB));
-
-                int x2 = (int)(xA - ((distAB-ecart)*(xA-xB)/distAB));
-                int y2 = (int)(yA + ((distAB-ecart)*(yB-yA)/distAB));
-
-                arrowHead(x1, y1, x2, y2);
-                line(x1, y1, x2, y2);
             } else if (in_search_of_top_to_dock && index_second_sommet_to_dock_if_released != -1 && index_first_sommet_to_dock_if_released != -1){
-                System.out.println("Création de l'arete !");
 
-                graphe_manager.getCurentGraphe().addArete(index_first_sommet_to_dock_if_released, index_second_sommet_to_dock_if_released);
-
+                graphe_manager.getCurentGraphe().addAreteDialog(index_first_sommet_to_dock_if_released, index_second_sommet_to_dock_if_released);
                 in_search_of_top_to_dock = false;
                 index_second_sommet_to_dock_if_released = -1;
                 index_first_sommet_to_dock_if_released = -1;
             } else  if (in_search_of_top_to_dock){
+
                 in_search_of_top_to_dock = false;
                 index_second_sommet_to_dock_if_released = -1;
                 index_first_sommet_to_dock_if_released = -1;
@@ -966,6 +965,109 @@ public class MainClass extends PApplet {
                 rotate(atan2(yB - yA, xB - xA));
                 triangle(- size * 2 , - size, 0, 0, - size * 2, size);
             popMatrix();
+        }
+
+        public void afficherArete(Sommet sommetInitial, Sommet sommetFinal, String texte, int typeDeGraphe){
+
+            int xA = sommetInitial.getX();
+            int yA = sommetInitial.getY();
+
+            int xB = 0;
+            int yB = 0;
+
+            int xC = 0;
+            int yC = 0;
+
+            int xD = 0;
+            int yD = 0;
+
+            if (sommetFinal != null){
+                xD = sommetFinal.getX();
+                yD = sommetFinal.getY();
+            } else if (in_search_of_top_to_dock){
+                xD = mouseX;
+                yD = mouseY;
+            }
+
+            fill(255);
+            stroke(255);
+
+            if (sommetInitial == sommetFinal){
+
+                noFill();
+                arc(sommetInitial.getX() + 20, sommetInitial.getY(), 40, 40, PI+QUARTER_PI, TWO_PI+3*QUARTER_PI);
+                noStroke();
+                fill(255);
+
+                if (typeDeGraphe == Graphe.ORIENTE || typeDeGraphe == Graphe.ORIENTE_LIBELE || typeDeGraphe == Graphe.ORIENTE_PONDERE){
+                    this.arrowHead(sommetInitial.getX() + 5, sommetInitial.getY() + 15, sommetInitial.getX()+ 1, sommetInitial.getY() + 7);
+                }
+            } else {
+
+                int ecart = 15;
+
+                float distAD = dist(xA, yA, xD, yD);
+
+                int x1 = (int)(xA - (ecart*(xA-xD)/distAD));
+                int y1 = (int)(yA + (ecart*(yD-yA)/distAD));
+
+                int x2 = (int)(xA - ((distAD-ecart)*(xA-xD)/distAD));
+                int y2 = (int)(yA + ((distAD-ecart)*(yD-yA)/distAD));
+
+
+                if (typeDeGraphe == Graphe.ORIENTE_LIBELE || typeDeGraphe == Graphe.ORIENTE_PONDERE || typeDeGraphe == Graphe.NON_ORIENTE_LIBELE || typeDeGraphe == Graphe.NON_ORIENTE_PONDERE){
+
+                    float longueurLigne = dist(x1, y1, x2, y2);
+                    float longueureDuTexte = ((SunGraphics2D) g.getNative()).getFontMetrics().stringWidth(texte);
+
+                    int ecartTexte = 5;
+
+                    float longueurSegment = longueurLigne/2-longueureDuTexte/2;
+
+                    xB = (int)(xA - ((ecart + longueurSegment - ecartTexte)*(xA-xD)/distAD));
+                    yB = (int)(yA + ((ecart + longueurSegment - ecartTexte)*(yD-yA)/distAD));
+
+                    xC = (int)(xA - ((distAD-ecart-longueurSegment + ecartTexte)*(xA-xD)/distAD));
+                    yC = (int)(yA + ((distAD-ecart-longueurSegment + ecartTexte)*(yD-yA)/distAD));
+
+                    int xTexte = (int)(xA - ((ecart+longueurSegment+longueureDuTexte/2)*(xA-xD)/distAD));
+                    int yTexte = (int)(yA + ((ecart+longueurSegment+longueureDuTexte/2)*(yD-yA)/distAD));
+
+
+                    if (texte.equals("~#{[|`@]}")){
+                        line(x1, y1, x2, y2);
+                    } else {
+                        line(x1, y1, xB, yB);
+                        line(xC, yC, x2, y2);
+                        pushMatrix();
+                            translate(xB, yB);
+                            if (atan2(yB - yC, xB - xC) > (-PI/2) && atan2(yB - yC, xB - xC) < (PI/2)){
+                                rotate(atan2(yB - yC, xB - xC));
+                                text(texte, 0-longueureDuTexte/2-ecartTexte, 3);
+                            } else {
+                                rotate(atan2(yC - yB, xC - xB));
+                                text(texte, longueureDuTexte/2+ecartTexte, 3);
+                            }
+                        popMatrix();
+                    }
+
+                } else {
+                    line(x1, y1, x2, y2);
+                }
+                if (typeDeGraphe == Graphe.ORIENTE || typeDeGraphe == Graphe.ORIENTE_LIBELE || typeDeGraphe == Graphe.ORIENTE_PONDERE){
+                    arrowHead(x1, y1, x2, y2);
+                }
+            }
+
+            noStroke();
+/*
+            textSize(12);
+            String str = "50";
+            float largeur_du_texte = ((SunGraphics2D) g.getNative()).getFontMetrics().stringWidth(str);
+
+            rectMode(CORNER);
+            textAlign(LEFT);
+ */
         }
 
     }
@@ -1014,7 +1116,7 @@ public class MainClass extends PApplet {
         public Menu() {
 
             frame.setLocationRelativeTo(null);
-            frame.setMinimumSize(new Dimension(390,200));
+            frame.setMinimumSize(new Dimension(490,200));
             JMenuBar barre = new JMenuBar();
 
             frame.setJMenuBar(barre);
@@ -1060,6 +1162,11 @@ public class MainClass extends PApplet {
             * alors la méthode ActionPerformed (plus bas) sera exécutée et aura en parametre le bouton qui aura été cliqué
             * nous pourrons alors exécuter l'action correspondante au bouton*/
             action_nouveau_graphe_oriente.addActionListener(this);
+            action_nouveau_graphe_oriente_etiquete.addActionListener(this);
+            action_nouveau_graphe_oriente_pondere.addActionListener(this);
+            action_nouveau_graphe_non_oriente.addActionListener(this);
+            action_nouveau_graphe_non_oriente_etiquete.addActionListener(this);
+            action_nouveau_graphe_non_oriente_pondere.addActionListener(this);
             action_ouvrir_un_graphe.addActionListener(this);
             action_fermer_ce_graphe.addActionListener(this);
             action_fermer_tout_les_graphes.addActionListener(this);
@@ -1234,6 +1341,26 @@ public class MainClass extends PApplet {
 
             else if (src == action_nouveau_graphe_oriente) {
                 graphe_manager.newGraphe(Graphe.ORIENTE);
+            }
+
+            else if (src == action_nouveau_graphe_oriente_etiquete) {
+                graphe_manager.newGraphe(Graphe.ORIENTE_LIBELE);
+            }
+
+            else if (src == action_nouveau_graphe_oriente_pondere) {
+                graphe_manager.newGraphe(Graphe.ORIENTE_PONDERE);
+            }
+
+            else if (src == action_nouveau_graphe_non_oriente) {
+                graphe_manager.newGraphe(Graphe.NON_ORIENTE);
+            }
+
+            else if (src == action_nouveau_graphe_non_oriente_etiquete) {
+                graphe_manager.newGraphe(Graphe.NON_ORIENTE_LIBELE);
+            }
+
+            else if (src == action_nouveau_graphe_non_oriente_pondere) {
+                graphe_manager.newGraphe(Graphe.NON_ORIENTE_PONDERE);
             }
 
             else if (src == action_activer_debogueur){
