@@ -9,6 +9,7 @@
 
 
 import processing.core.PApplet;
+import processing.event.MouseEvent;
 import sun.java2d.SunGraphics2D;
 
 import javax.lang.model.type.NullType;
@@ -671,6 +672,11 @@ public class MainClass extends PApplet {
     }
 
 
+    public void mouseWheel(MouseEvent event) {
+        int e = (int)event.getCount();
+    }
+
+
     Menu menu;
     JFrame frame;
     UIManager ui_manager;
@@ -689,6 +695,9 @@ public class MainClass extends PApplet {
     int index_first_sommet_to_dock_if_released = -1;
     boolean in_search_of_top_to_dock = false;
     int index_onglet_hover = -1;
+    int index_onglet_holded = -1;
+    int clic_x = -1;
+    int clic_y = -1;
 
     /* Me permet de calculer la mémoire utilisée par mon programme*/
     NumberFormat nf = NumberFormat.getInstance(new Locale("fr", "FR"));
@@ -696,6 +705,14 @@ public class MainClass extends PApplet {
 
     public void mouseReleased(){
         index_sommet_holded = -1;
+        index_onglet_holded = -1;
+        clic_y = -1;
+        clic_x = -1;
+    }
+
+    public void mouseClick(){
+        clic_x = mouseX;
+        clic_y = mouseY;
     }
 
 
@@ -815,6 +832,9 @@ public class MainClass extends PApplet {
         public int couleur_liseret_dark =          color(0);
         public int couleur_bandeau_inferieur =     color(20, 20, 17);
 
+        private int onglet_selected_at_X = -1;
+        private int onglet_selected_at_Y = -1;
+
         public UIManager(){
             /* Créé la barre de menu suppérieur de mon programme (Fichier Edition ...) */
             menu = new Menu();
@@ -916,7 +936,7 @@ public class MainClass extends PApplet {
                 }
             }
 
-            /* Si la sourie est en dehors de tout les onglets alors il n'y a plus de sommets pouvant étre survolé*/
+            /* Si la souris est en dehors de tout les onglets alors il n'y a plus de sommets pouvant étre survolé*/
             if (!(mouseY < 35 && mouseY > 0 && mouseX > 10 && mouseX < 10 + (graphe_manager.getAmountOfGraphe())*largeur_onglet)) {
                 index_onglet_hover = -1;
             }
@@ -932,16 +952,15 @@ public class MainClass extends PApplet {
                     this.afficherArete(
                             graphe_manager.getCurentGraphe().getSommet(index_first_sommet_to_dock_if_released),
                             graphe_manager.getCurentGraphe().getSommet(index_second_sommet_to_dock_if_released),
-                            "~#{[|`@]}",
+                            "",
                             graphe_manager.getCurentGraphe().getType());
                 } else {
                     this.afficherArete(
                             graphe_manager.getCurentGraphe().getSommet(index_first_sommet_to_dock_if_released),
                             null,
-                            "~#{[|`@]}",
+                            "",
                             graphe_manager.getCurentGraphe().getType());
                 }
-
 
             } else if (in_search_of_top_to_dock && index_second_sommet_to_dock_if_released != -1 && index_first_sommet_to_dock_if_released != -1){
 
@@ -1034,7 +1053,9 @@ public class MainClass extends PApplet {
                     int yTexte = (int)(yA + ((ecart+longueurSegment+longueureDuTexte/2)*(yD-yA)/distAD));
 
 
-                    if (texte.equals("~#{[|`@]}")){
+                    if (dist(xA, yA, xD, yD) <= 2*ecart+2){
+                        line(xA, yA, xD, yD);
+                    } else if (texte.equals("") || (dist(x1, y1, x2, y2) < ecartTexte*2+longueureDuTexte)){
                         line(x1, y1, x2, y2);
                     } else {
                         line(x1, y1, xB, yB);
@@ -1051,23 +1072,21 @@ public class MainClass extends PApplet {
                         popMatrix();
                     }
 
-                } else {
-                    line(x1, y1, x2, y2);
                 }
-                if (typeDeGraphe == Graphe.ORIENTE || typeDeGraphe == Graphe.ORIENTE_LIBELE || typeDeGraphe == Graphe.ORIENTE_PONDERE){
+                else {
+                    if (dist(xA, yA, xD, yD) <= 2*ecart+2){
+                        line(xA, yA, xD, yD);
+                    } else {
+                        line(x1, y1, x2, y2);
+                    }
+                }
+
+                if ((typeDeGraphe == Graphe.ORIENTE || typeDeGraphe == Graphe.ORIENTE_LIBELE || typeDeGraphe == Graphe.ORIENTE_PONDERE) && distAD > ecart*2+2){
                     arrowHead(x1, y1, x2, y2);
                 }
             }
 
             noStroke();
-/*
-            textSize(12);
-            String str = "50";
-            float largeur_du_texte = ((SunGraphics2D) g.getNative()).getFontMetrics().stringWidth(str);
-
-            rectMode(CORNER);
-            textAlign(LEFT);
- */
         }
 
     }
