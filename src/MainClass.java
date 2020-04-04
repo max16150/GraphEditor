@@ -8,6 +8,8 @@
 
 
 
+import com.sun.istack.internal.Nullable;
+import org.jetbrains.annotations.NotNull;
 import processing.core.PApplet;
 import processing.event.MouseEvent;
 import sun.java2d.SunGraphics2D;
@@ -380,8 +382,7 @@ public class MainClass extends PApplet {
                 str = Float.toString(this.getPoid());
             }
 
-            ui_manager.afficherArete(sommetinitial,sommetfinal,str, g.getType());
-
+            ui_manager.afficherArete(sommetinitial,sommetfinal,str, g.getType(), this);
         }
     }
 
@@ -527,6 +528,7 @@ public class MainClass extends PApplet {
 
     /* Classe qui régie chaques graphes */
     public class Graphe{
+
         /* Chaques graphes a un nom, et possède une liste de sommet et d'aretes*/
         private String name;
         private Liste<Arete> aretes;
@@ -552,6 +554,10 @@ public class MainClass extends PApplet {
 
         public String getName(){
             return this.name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
 
         public Sommet getSommet(int i){
@@ -696,6 +702,8 @@ public class MainClass extends PApplet {
     boolean in_search_of_top_to_dock = false;
     int index_onglet_hover = -1;
     int index_onglet_holded = -1;
+    Arete arete_hover = null;
+    int index_arete_hover = -1;
     int clic_x = -1;
     int clic_y = -1;
 
@@ -953,13 +961,13 @@ public class MainClass extends PApplet {
                             graphe_manager.getCurentGraphe().getSommet(index_first_sommet_to_dock_if_released),
                             graphe_manager.getCurentGraphe().getSommet(index_second_sommet_to_dock_if_released),
                             "",
-                            graphe_manager.getCurentGraphe().getType());
+                            graphe_manager.getCurentGraphe().getType(), null);
                 } else {
                     this.afficherArete(
                             graphe_manager.getCurentGraphe().getSommet(index_first_sommet_to_dock_if_released),
                             null,
                             "",
-                            graphe_manager.getCurentGraphe().getType());
+                            graphe_manager.getCurentGraphe().getType(), null);
                 }
 
             } else if (in_search_of_top_to_dock && index_second_sommet_to_dock_if_released != -1 && index_first_sommet_to_dock_if_released != -1){
@@ -986,7 +994,11 @@ public class MainClass extends PApplet {
             popMatrix();
         }
 
-        public void afficherArete(Sommet sommetInitial, Sommet sommetFinal, String texte, int typeDeGraphe){
+        public void afficherArete(@NotNull Sommet sommetInitial, Sommet sommetFinal, String texte, int typeDeGraphe, @Nullable Arete arete){
+
+            float mouseDistToArrete = 50;
+
+            boolean isCliked = false;
 
             int xA = sommetInitial.getX();
             int yA = sommetInitial.getY();
@@ -1013,15 +1025,55 @@ public class MainClass extends PApplet {
 
             if (sommetInitial == sommetFinal){
 
-                noFill();
-                arc(sommetInitial.getX() + 20, sommetInitial.getY(), 40, 40, PI+QUARTER_PI, TWO_PI+3*QUARTER_PI);
-                noStroke();
-                fill(255);
+                int diameter = 40;
 
-                if (typeDeGraphe == Graphe.ORIENTE || typeDeGraphe == Graphe.ORIENTE_LIBELE || typeDeGraphe == Graphe.ORIENTE_PONDERE){
-                    this.arrowHead(sommetInitial.getX() + 5, sommetInitial.getY() + 15, sommetInitial.getX()+ 1, sommetInitial.getY() + 7);
+                int radius = diameter/2;
+
+                mouseDistToArrete = dist(mouseX, mouseY, sommetInitial.getX() + 20, sommetInitial.getY()) - radius;
+
+                System.out.println(mouseDistToArrete);
+
+                if (index_sommet_hover == -1 && index_sommet_holded == -1 && !in_search_of_top_to_dock){
+                    if (mouseDistToArrete < 5 && mouseDistToArrete > -5 && (arete_hover == null || arete_hover == arete)){
+                        arete_hover = arete;
+                    } else if (arete_hover == arete){
+                        arete_hover = null;
+                    }
+                } else {
+                    arete_hover = null;
                 }
-            } else {
+
+                if (arete_hover == arete){
+                    stroke(255,50,50);
+                    noFill();
+                    arc(sommetInitial.getX() + radius, sommetInitial.getY(), diameter, diameter, PI+QUARTER_PI, TWO_PI+3*QUARTER_PI);
+
+                    fill(255,50,50);
+                    noStroke();
+                    if (typeDeGraphe == Graphe.ORIENTE || typeDeGraphe == Graphe.ORIENTE_LIBELE || typeDeGraphe == Graphe.ORIENTE_PONDERE){
+                        this.arrowHead(sommetInitial.getX() + 5, sommetInitial.getY() + 15, sommetInitial.getX()+ 1, sommetInitial.getY() + 7);
+                    }
+
+                    if (mouseButton == LEFT){
+                        isCliked = true;
+                    }
+
+                } else {
+                    stroke(255);
+                    noFill();
+                    arc(sommetInitial.getX() + radius, sommetInitial.getY(), diameter, diameter, PI+QUARTER_PI, TWO_PI+3*QUARTER_PI);
+
+                    fill(255);
+                    noStroke();
+                    if (typeDeGraphe == Graphe.ORIENTE || typeDeGraphe == Graphe.ORIENTE_LIBELE || typeDeGraphe == Graphe.ORIENTE_PONDERE){
+                        this.arrowHead(sommetInitial.getX() + 5, sommetInitial.getY() + 15, sommetInitial.getX()+ 1, sommetInitial.getY() + 7);
+                    }
+                }
+
+                noFill();
+                noStroke();
+            }
+            else {
 
                 int ecart = 15;
 
@@ -1033,6 +1085,47 @@ public class MainClass extends PApplet {
                 int x2 = (int)(xA - ((distAD-ecart)*(xA-xD)/distAD));
                 int y2 = (int)(yA + ((distAD-ecart)*(yD-yA)/distAD));
 
+                if (!in_search_of_top_to_dock){
+
+                    float dx = x2 - x1;
+                    float dy = y2 - y1;
+
+                    float dist = ((mouseX - x1) * dx + (mouseY - y1) * dy) / (dx * dx + dy * dy);
+
+                    if (dist < 0) {
+                        dx = mouseX - x1;
+                        dy = mouseY - y1;
+                    } else if (dist > 1) {
+                        dx = mouseX - x2;
+                        dy = mouseY - y2;
+                    } else {
+                        dx = mouseX - (x1 + dist * dx);
+                        dy = mouseY - (y1 + dist * dy);
+                    }
+
+                    mouseDistToArrete = sqrt(dx * dx + dy * dy);
+
+                    if (index_sommet_hover == -1 && index_sommet_holded == -1){
+                        if (mouseDistToArrete < 5 && distAD > 2*ecart && (arete_hover == null || arete_hover == arete)){
+                            arete_hover = arete;
+                        } else if (arete_hover == arete){
+                            arete_hover = null;
+                        }
+                    } else {
+                        arete_hover = null;
+                    }
+
+                    if (arete_hover == arete){
+                        fill(255,50,50);
+                        stroke(255,50,50);
+
+                        if (mouseButton == LEFT){
+                            isCliked = true;
+                        }
+                    }
+
+
+                }
 
                 if (typeDeGraphe == Graphe.ORIENTE_LIBELE || typeDeGraphe == Graphe.ORIENTE_PONDERE || typeDeGraphe == Graphe.NON_ORIENTE_LIBELE || typeDeGraphe == Graphe.NON_ORIENTE_PONDERE){
 
@@ -1086,9 +1179,26 @@ public class MainClass extends PApplet {
                 }
             }
 
+            if (isCliked && !in_search_of_top_to_dock){
+                Dialog dial = new Dialog<Integer, Integer, Float>(
+                        "Changer valeur arrete",
+                        "Sommet de départ de l'arête :",
+                        "Sommet de fin de l'arête :",
+                        "Coût de l'arête :",
+                        Integer.class,
+                        Integer.class,
+                        Float.class);
+
+                /* On réculère les valeurs que l'utilisateur a rentré*/
+                if (dial.getA() != null && dial.getB() != null && dial.getC() != null) {
+                    int a = (int)dial.getA();
+                    int b = (int)dial.getB();
+                    float c = (float)dial.getC();
+                }
+            }
+
             noStroke();
         }
-
     }
 
 
@@ -1107,6 +1217,7 @@ public class MainClass extends PApplet {
 
         private JMenuItem action_ouvrir_un_graphe;
         private JMenuItem action_fermer_ce_graphe;
+        private JMenuItem action_renommer_ce_graphe;
         private JMenuItem action_fermer_tout_les_graphes;
         private JMenuItem action_enregistrer_sous;
         private JMenuItem action_imprimer;
@@ -1164,13 +1275,14 @@ public class MainClass extends PApplet {
             /* Un menu (fichier par exemple ) peux comporter d'autres menu, ou simplement il peux comporter les "boutons"
             * qui exécuterons des taches (les JMenuItem)
             * Ici on défini ceux du menu Fichier*/
-            action_nouveau_graphe_oriente = new JMenuItem("Nouveau Graphe Orienté");
-            action_nouveau_graphe_oriente_pondere = new JMenuItem("Nouveau Graphe Orienté Pondéré");
-            action_nouveau_graphe_oriente_etiquete = new JMenuItem("Nouveau Graphe Orienté Étiqueté");
-            action_nouveau_graphe_non_oriente = new JMenuItem("Nouveau Graphe Non Orienté");
-            action_nouveau_graphe_non_oriente_pondere = new JMenuItem("Nouveau Graphe Non Orienté Pondéré");
-            action_nouveau_graphe_non_oriente_etiquete = new JMenuItem("Nouveau Graphe Non Orienté Étiqueté");
+            action_nouveau_graphe_oriente = new JMenuItem("Graphe Orienté");
+            action_nouveau_graphe_oriente_pondere = new JMenuItem("Graphe Orienté Pondéré");
+            action_nouveau_graphe_oriente_etiquete = new JMenuItem("Graphe Orienté Étiqueté");
+            action_nouveau_graphe_non_oriente = new JMenuItem("Graphe Non Orienté");
+            action_nouveau_graphe_non_oriente_pondere = new JMenuItem("Graphe Non Orienté Pondéré");
+            action_nouveau_graphe_non_oriente_etiquete = new JMenuItem("Graphe Non Orienté Étiqueté");
             action_ouvrir_un_graphe = new JMenuItem("Ouvrir un Graphe");
+            action_renommer_ce_graphe = new JMenuItem("Renommer ce Graphe");
             action_fermer_ce_graphe = new JMenuItem("Fermer ce Graphe");
             action_fermer_tout_les_graphes = new JMenuItem("Fermer tout les Graphes");
             action_enregistrer_sous = new JMenuItem("Enregistrer sous");
@@ -1187,25 +1299,30 @@ public class MainClass extends PApplet {
             action_nouveau_graphe_non_oriente_etiquete.addActionListener(this);
             action_nouveau_graphe_non_oriente_pondere.addActionListener(this);
             action_ouvrir_un_graphe.addActionListener(this);
+            action_renommer_ce_graphe.addActionListener(this);
             action_fermer_ce_graphe.addActionListener(this);
             action_fermer_tout_les_graphes.addActionListener(this);
             action_enregistrer_sous.addActionListener(this);
             action_imprimer.addActionListener(this);
             action_quitter.addActionListener(this);
 
+            JMenu nouveau_menu = new JMenu("Nouveau");
+
             /* Ici on met en forme le menu, on ajoute quelques séparateurs pour l'estétique*/
-            fichier_menu.add(action_nouveau_graphe_oriente);
-            fichier_menu.add(action_nouveau_graphe_oriente_pondere);
-            fichier_menu.add(action_nouveau_graphe_oriente_etiquete);
-            fichier_menu.addSeparator();
-            fichier_menu.add(action_nouveau_graphe_non_oriente);
-            fichier_menu.add(action_nouveau_graphe_non_oriente_pondere);
-            fichier_menu.add(action_nouveau_graphe_non_oriente_etiquete);
+            nouveau_menu.add(action_nouveau_graphe_oriente);
+            nouveau_menu.add(action_nouveau_graphe_oriente_pondere);
+            nouveau_menu.add(action_nouveau_graphe_oriente_etiquete);
+            nouveau_menu.addSeparator();
+            nouveau_menu.add(action_nouveau_graphe_non_oriente);
+            nouveau_menu.add(action_nouveau_graphe_non_oriente_pondere);
+            nouveau_menu.add(action_nouveau_graphe_non_oriente_etiquete);
+            fichier_menu.add(nouveau_menu);
             fichier_menu.addSeparator();
             fichier_menu.add(action_ouvrir_un_graphe);
-            fichier_menu.addSeparator();
             fichier_menu.add(action_fermer_ce_graphe);
             fichier_menu.add(action_fermer_tout_les_graphes);
+            fichier_menu.addSeparator();
+            fichier_menu.add(action_renommer_ce_graphe);
             fichier_menu.addSeparator();
             fichier_menu.add(action_enregistrer_sous);
             fichier_menu.addSeparator();
@@ -1304,8 +1421,27 @@ public class MainClass extends PApplet {
 
             }
 
+            else if (src == action_renommer_ce_graphe){
+                /* Création d'une instance de Dialog, avec tout les parametres qui vont avec, tant que l'utilisateur n'aura pas
+                 * cliqué sur OK ou qu'il aura cliqué sur annuler le code attend a ce niveau*/
+                Dialog dial = new Dialog<String, NullType, NullType>(
+                        "Renommer ce graphe",
+                        "Nouveau nom :",
+                        "",
+                        "",
+                        String.class,
+                        NullType.class,
+                        NullType.class);
+
+                /* On réculère les valeurs que l'utilisateur a rentré*/
+                if (dial.getA() != null) {
+                    String a = (String)dial.getA();
+
+                    graphe_manager.getCurentGraphe().setName(a);
+                }
+            }
+
             else if (src == action_ajouter_une_arete) {
-                System.out.println("Ajouter une nouvelle arête");
 
                 /* Création d'une instance de Dialog, avec tout les parametres qui vont avec, tant que l'utilisateur n'aura pas
                 * cliqué sur OK ou qu'il aura cliqué sur annuler le code attend a ce niveau*/
@@ -1395,7 +1531,7 @@ public class MainClass extends PApplet {
 
         }
 
-        /* Je rend cliquable ou pas les boutons du menu Graphe, en effet, si il n'existe pas de graphe, rien ne sert
+        /* Je rend cliquable ou pas les boutons du menu, en effet, si il n'existe pas de graphe, rien ne sert
         * d'ajouter une arete ou un sommet, encore moins d'essayer d'en supprimer un*/
         public void grapheClickabke(boolean b){
             action_ajouter_une_arete.setEnabled(b);
@@ -1403,6 +1539,13 @@ public class MainClass extends PApplet {
             action_supprimer_une_arete.setEnabled(b);
             action_supprimer_un_sommet.setEnabled(b);
             action_modifier_une_arete.setEnabled(b);
+            action_renommer_ce_graphe.setEnabled(b);
+            action_fermer_ce_graphe.setEnabled(b);
+            action_fermer_tout_les_graphes.setEnabled(b);
+            action_calcul_matrice_adjacente.setEnabled(b);
+            action_calcul_matrice_transitive.setEnabled(b);
+            action_imprimer.setEnabled(b);
+            action_enregistrer_sous.setEnabled(b);
         }
     }
 
@@ -1464,16 +1607,29 @@ public class MainClass extends PApplet {
                 fill(255);
                 textAlign(LEFT);
 
-                text("fps : " + nf.format(frameRate), 20, 50);
-                text("Mémoire utilisée (pgrm) : " + nf.format(((curentMemoryUsed-startMemoryUsed)/1000000.0)) + " Mo", 20,50 + 20);
-                text("Mémoire utilisée (total) : " + nf.format(((curentMemoryUsed/1000000.0))) + " Mo", 20,50 + 20 *2);
-
-                text("Sommet Survolé : " + Integer.toString(index_sommet_hover), 20, 50 + 20 *3);
-                text("Sommet sélectionné : " + Integer.toString(index_sommet_holded), 20, 50 + 20 *4);
-                text("En train de relier des sommets ? : " + Boolean.toString(in_search_of_top_to_dock), 20, 50 + 20 *5);
-                text("1er Sommet à relier : " + Integer.toString(index_first_sommet_to_dock_if_released), 20, 50 + 20 *6);
-                text("2nd Sommet à relier : " + Integer.toString(index_second_sommet_to_dock_if_released), 20, 50 + 20 *7);
-                text("Onglet Survolé : " + Integer.toString(index_onglet_hover), 20, 50 + 20 *8);
+                int i = 0;
+                text("fps : " + nf.format(frameRate), 20, 50 + 20 *i);
+                i++;
+                text("Mémoire utilisée (pgrm) : " + nf.format(((curentMemoryUsed-startMemoryUsed)/1000000.0)) + " Mo", 20,50 + 20*i);
+                i++;
+                text("Mémoire utilisée (total) : " + nf.format(((curentMemoryUsed/1000000.0))) + " Mo", 20,50 + 20 *i);
+                i++;
+                i++;
+                text("Sommet Survolé : " + Integer.toString(index_sommet_hover), 20, 50 + 20 *i);
+                i++;
+                text("Sommet sélectionné : " + Integer.toString(index_sommet_holded), 20, 50 + 20 *i);
+                i++;
+                i++;
+                text("Arete survolée : " + arete_hover, 20, 50 + 20 *i);
+                i++;
+                i++;
+                text("En train de relier des sommets ? : " + Boolean.toString(in_search_of_top_to_dock), 20, 50 + 20 *i);
+                i++;
+                text("1er Sommet à relier : " + Integer.toString(index_first_sommet_to_dock_if_released), 20, 50 + 20 *i);
+                i++;
+                text("2nd Sommet à relier : " + Integer.toString(index_second_sommet_to_dock_if_released), 20, 50 + 20 *i);
+                i++;
+                text("Onglet Survolé : " + Integer.toString(index_onglet_hover), 20, 50 + 20 *i);
             }
         }
     }
