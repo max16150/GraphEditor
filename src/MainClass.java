@@ -7,7 +7,6 @@
 * */
 
 
-
 import com.sun.istack.internal.Nullable;
 import org.jetbrains.annotations.NotNull;
 import processing.core.PApplet;
@@ -25,6 +24,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import java.awt.Color;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.text.NumberFormat;
 import java.util.Locale;
 import javax.swing.event.AncestorEvent;
@@ -208,6 +209,85 @@ public class MainClass extends PApplet {
     }
 
 
+    abstract class GFrame extends JFrame{
+        protected int indexInFrameManager;
+
+        private GFrame(){
+            this.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    System.out.println(this + " closed");
+                    //System.exit(0);
+                    frame_manager.deleteFrame(indexInFrameManager);
+                }
+            });
+        }
+
+        abstract void draw();
+
+        public void changeIndexInFrameManager(int i) {
+            this.indexInFrameManager = i;
+        }
+    }
+
+    public class MatriceFrame extends GFrame{
+        JPanel panel;
+
+
+        public MatriceFrame(int i){
+            this.indexInFrameManager = i;
+            this.setMinimumSize(new Dimension(200,200));
+            //this.setSize(1920,1080);
+            this.setLocationRelativeTo(frame);
+
+            panel = new JPanel();
+            this.setContentPane(panel);
+
+            this.setVisible(true);
+        }
+
+        Color backgroundcolor = new Color(40, 41, 35);
+
+        @Override
+        public void draw(){
+            Graphics g = this.panel.getGraphics();
+            this.panel.setBackground(backgroundcolor);
+            g.fillOval(10,10,100,100);
+            //g.drawArc();
+        }
+    }
+
+    public class FrameManager{
+        private Liste<GFrame> frames = new Liste<GFrame>();
+
+        public FrameManager(){
+
+        }
+
+        public void newMatriceFrame(){
+            this.frames.add(new MatriceFrame(this.frames.size()));
+        }
+
+        public void draw(){
+            if (this.frames.size() != 0){
+                for (int i=0; i<this.frames.size(); i++){
+                    this.frames.get(i).draw();
+                }
+            }
+        }
+
+        public void deleteFrame(int indexInFrameManager){
+            this.frames.remove(indexInFrameManager);
+
+            if (this.frames.size() != 0){
+                for (int i=0; i<this.frames.size(); i++){
+                    this.frames.get(i).changeIndexInFrameManager(i);
+                }
+            }
+        }
+    }
+
+
     /* Ma classe Liste codée en début de semestre, elle est assez complète et me permet beaucoup d'action sur mes listes
     * Je peux faire une liste de nimporte quel Objet grace a la généricité
     * Je ferais par la suite des listes de Sommet Arete et Graphe*/
@@ -254,9 +334,13 @@ public class MainClass extends PApplet {
         }
 
         public void remove(int index){
-            if (index == 0) {
+            if (index == 0 && this.size() != 1) {
                 this.value = this.getNext().value;
                 this.nextList = this.getNext().nextList;
+                return;
+            } else if (index == 0){
+                this.value = null;
+                this.nextList = null;
                 return;
             }
             Liste<T> occurencyBefore = this.getOccurency(index-1);
@@ -687,6 +771,7 @@ public class MainClass extends PApplet {
     JFrame frame;
     UIManager ui_manager;
     GrapheManager graphe_manager;
+    FrameManager frame_manager;
     Debuger debuger;
 
     Cursor hand_corsor = new Cursor(Cursor.HAND_CURSOR);
@@ -706,19 +791,27 @@ public class MainClass extends PApplet {
     int index_arete_hover = -1;
     int clic_x = -1;
     int clic_y = -1;
+    int millis = 0;
 
     /* Me permet de calculer la mémoire utilisée par mon programme*/
     NumberFormat nf = NumberFormat.getInstance(new Locale("fr", "FR"));
 
 
     public void mouseReleased(){
+
+        if (clic_x == mouseX && clic_y == mouseY && index_sommet_holded != -1 && millis() < millis+500){
+            System.out.println("SELECTIOON " + index_sommet_hover);
+        }
+
         index_sommet_holded = -1;
         index_onglet_holded = -1;
+
         clic_y = -1;
         clic_x = -1;
     }
 
-    public void mouseClick(){
+    public void mousePressed(){
+        millis = millis();
         clic_x = mouseX;
         clic_y = mouseY;
     }
@@ -739,6 +832,14 @@ public class MainClass extends PApplet {
         graphe_manager = new GrapheManager();
 
         debuger = new Debuger();
+
+        frame_manager = new FrameManager();
+/*
+        String[] args = {"YourSketchNameHere"};
+        SecondApplet sa = new SecondApplet();
+        PApplet.runSketch(args, sa);
+*/
+
 
         //textSize(50);
 
@@ -769,6 +870,7 @@ public class MainClass extends PApplet {
         ui_manager.draw();
         graphe_manager.drawCurentGraphe();
         debuger.draw();
+        frame_manager.draw();
     }
 
 
@@ -1480,13 +1582,13 @@ public class MainClass extends PApplet {
 
             else if (src == action_calcul_matrice_transitive) {
                 System.out.println("Calcul de la matrice transitive");
-
+                frame_manager.newMatriceFrame();
 
             }
 
             else if (src == action_calcul_matrice_adjacente) {
                 System.out.println("Calcul de la matrice adjacente");
-
+                frame_manager.newMatriceFrame();
 
             }
 
