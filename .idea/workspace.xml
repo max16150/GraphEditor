@@ -2,15 +2,29 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="48df8484-a7aa-4f41-87ea-27e0d2c5ddd2" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/data/screen-0001.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0002.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0003.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0004.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0005.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0006.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0007.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0008.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0009.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0010.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0011.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0012.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0013.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0014.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0015.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0016.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0017.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0018.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0019.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0020.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0021.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/screen-0022.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Arete.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Dialog.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Graphe.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$GrapheManager.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Liste.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$Sommet.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass$UIManager.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/MI - 01/MainClass.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MainClass.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/MainClass.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -51,9 +65,16 @@
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="Errors" />
+    <property name="settings.editor.selected.configurable" value="preferences.editor" />
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.MainClass">
+    <configuration name="MainClass$ProjectorSketch" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="MainClass$ProjectorSketch" />
+      <module name="MI - 01" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="MainClass" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="MainClass" />
       <module name="MI - 01" />
@@ -77,6 +98,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.MainClass$ProjectorSketch" />
         <item itemvalue="Application.MainClass" />
         <item itemvalue="Application.MainClass" />
       </list>
@@ -196,7 +218,14 @@
       <option name="project" value="LOCAL" />
       <updated>1586018963850</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="Ajout nouvelle fenetre pour graphe&#10;Amélioration modification des sommets a la souris">
+      <created>1586169413123</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1586169413123</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -210,7 +239,8 @@
     <MESSAGE value="Refonte du systeme d'affichage des aretes&#10;Implementation totale des nouveaux types de graphes" />
     <MESSAGE value="maj" />
     <MESSAGE value="Ajout arrete clikable&#10;renommer graphe" />
-    <option name="LAST_COMMIT_MESSAGE" value="Ajout arrete clikable&#10;renommer graphe" />
+    <MESSAGE value="Ajout nouvelle fenetre pour graphe&#10;Amélioration modification des sommets a la souris" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ajout nouvelle fenetre pour graphe&#10;Amélioration modification des sommets a la souris" />
   </component>
   <component name="WindowStateProjectService">
     <state x="414" y="194" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1585428308935">
@@ -221,10 +251,10 @@
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="714" y="408" key="#com.intellij.ide.actions.ChooseComponentsToExportDialog/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1584850196979" />
-    <state x="1220" y="217" key="#com.intellij.ide.util.MemberChooser" timestamp="1586070834867">
+    <state x="1220" y="217" key="#com.intellij.ide.util.MemberChooser" timestamp="1586347574149">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state x="1220" y="217" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586070834867" />
+    <state x="1220" y="217" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586347574149" />
     <state x="330" y="0" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1585439071839">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
@@ -237,10 +267,10 @@
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="707" y="395" key="ANALYSIS_DLG_com.intellij.analysis.BaseAnalysisAction$1/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1584899369599" />
-    <state x="89" y="53" width="1729" height="940" key="CommitChangelistDialog2" timestamp="1586018962967">
+    <state x="89" y="53" width="1729" height="940" key="CommitChangelistDialog2" timestamp="1586169412075">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state x="89" y="53" width="1729" height="940" key="CommitChangelistDialog2/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586018962967" />
+    <state x="89" y="53" width="1729" height="940" key="CommitChangelistDialog2/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586169412075" />
     <state x="177" y="72" key="DiffContextDialog" timestamp="1586018915955">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
@@ -249,25 +279,25 @@
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="666" y="280" key="FileChooserDialogImpl/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585421334456" />
-    <state width="1876" height="115" key="GridCell.Tab.0.bottom" timestamp="1586092965950">
+    <state width="1876" height="263" key="GridCell.Tab.0.bottom" timestamp="1586444514885">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1876" height="115" key="GridCell.Tab.0.bottom/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586092965950" />
+    <state width="1876" height="263" key="GridCell.Tab.0.bottom/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586444514885" />
     <state width="1860" height="149" key="GridCell.Tab.0.bottom/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@1920.0.1920.1080" timestamp="1584849626277" />
-    <state width="1876" height="115" key="GridCell.Tab.0.center" timestamp="1586092965950">
+    <state width="1876" height="263" key="GridCell.Tab.0.center" timestamp="1586444514885">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1876" height="115" key="GridCell.Tab.0.center/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586092965950" />
+    <state width="1876" height="263" key="GridCell.Tab.0.center/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586444514885" />
     <state width="1860" height="149" key="GridCell.Tab.0.center/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@1920.0.1920.1080" timestamp="1584849626277" />
-    <state width="1876" height="115" key="GridCell.Tab.0.left" timestamp="1586092965950">
+    <state width="1876" height="263" key="GridCell.Tab.0.left" timestamp="1586444514885">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1876" height="115" key="GridCell.Tab.0.left/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586092965950" />
+    <state width="1876" height="263" key="GridCell.Tab.0.left/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586444514885" />
     <state width="1860" height="149" key="GridCell.Tab.0.left/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@1920.0.1920.1080" timestamp="1584849626277" />
-    <state width="1876" height="115" key="GridCell.Tab.0.right" timestamp="1586092965950">
+    <state width="1876" height="263" key="GridCell.Tab.0.right" timestamp="1586444514885">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1876" height="115" key="GridCell.Tab.0.right/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586092965950" />
+    <state width="1876" height="263" key="GridCell.Tab.0.right/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586444514885" />
     <state width="1860" height="149" key="GridCell.Tab.0.right/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@1920.0.1920.1080" timestamp="1584849626277" />
     <state width="1876" height="156" key="GridCell.Tab.1.bottom" timestamp="1585447865031">
       <screen x="0" y="0" width="1920" height="1080" />
@@ -285,10 +315,10 @@
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="1876" height="156" key="GridCell.Tab.1.right/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585447865031" />
-    <state x="800" y="110" key="SettingsEditor" timestamp="1586003818989">
+    <state x="800" y="110" key="SettingsEditor" timestamp="1586300431692">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state x="800" y="110" key="SettingsEditor/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586003818989" />
+    <state x="800" y="110" key="SettingsEditor/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586300431692" />
     <state x="552" y="272" key="Vcs.Push.Dialog.v2" timestamp="1585619193650">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
@@ -301,18 +331,22 @@
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="769" y="456" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1584899875845" />
-    <state x="1915" y="-23" width="1660" height="845" maximized="true" key="dock-window-1" timestamp="1586002332116">
+    <state x="-927" y="-12" width="827" height="1055" maximized="true" key="dock-window-1" timestamp="1586443845719">
+      <screen x="-1920" y="0" width="1920" height="1080" />
+    </state>
+    <state x="-927" y="-12" width="827" height="1055" maximized="true" key="dock-window-1/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586443845719" />
+    <state x="2164" y="-8" width="827" height="1055" maximized="true" key="dock-window-2" timestamp="1586439424902">
       <screen x="1920" y="0" width="1920" height="1080" />
     </state>
-    <state x="1915" y="-23" width="1660" height="845" maximized="true" key="dock-window-1/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586002332116" />
-    <state x="1973" y="-17" width="837" height="1055" maximized="true" key="dock-window-2" timestamp="1586169316023">
-      <screen x="1920" y="0" width="1920" height="1080" />
-    </state>
-    <state x="1973" y="-17" width="837" height="1055" maximized="true" key="dock-window-2/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586169316023" />
+    <state x="2164" y="-8" width="827" height="1055" maximized="true" key="dock-window-2/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586439424902" />
     <state width="600" height="424" key="javadoc.popup" timestamp="1585365944788">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state width="600" height="424" key="javadoc.popup/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1585365944788" />
+    <state x="342" y="159" key="new project wizard" timestamp="1586416009688">
+      <screen x="0" y="0" width="1920" height="1080" />
+    </state>
+    <state x="342" y="159" key="new project wizard/0.0.1920.1080/1920.0.1920.1080/-1920.0.1920.1080@0.0.1920.1080" timestamp="1586416009688" />
     <state x="666" y="167" key="refactoring.ChangeSignatureDialog" timestamp="1586010889809">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>

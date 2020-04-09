@@ -7,25 +7,19 @@
 * */
 
 
-import com.sun.istack.internal.Nullable;
-import org.jetbrains.annotations.NotNull;
 import processing.core.PApplet;
 import processing.event.MouseEvent;
-import sun.java2d.SunGraphics2D;
 
 import javax.lang.model.type.NullType;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import java.awt.Color;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.text.NumberFormat;
 import java.util.Locale;
 import javax.swing.event.AncestorEvent;
@@ -59,6 +53,7 @@ public class MainClass extends PApplet {
         * j'utilise la généricité pour pouvoir la encore décider du type de valeur
         * aType et aV sont étroitement liées,
         * si je veux que l'utilisateur rentre un entier dans un champs A = Integer et aType = Integer.class*/
+
         private Class<A> aType;
         private A aV;
         private Class<B> bType;
@@ -66,13 +61,22 @@ public class MainClass extends PApplet {
         private Class<C> cType;
         private C cV;
 
+        boolean needDelete = false;
+
+
         /* Unique constructeur de la fenetre de dialogue, elle peut demander jusqu'a 3 valeurs en meme temps car je
         * n'ai jamais besoin d'en demander plus*/
-        Dialog(String title, String a, String b, String c, Class<A> tA, Class<B> tB, Class<C> tC){
 
-            this.aType = tA;
-            this.bType = tB;
-            this.cType = tC;
+        Dialog(String title, String a, String b, String c, Class<A> tA, Class<B> tB, Class<C> tC){
+            this(title, a, b, c, tA, tB, tC, false);
+        }
+
+
+        Dialog(String titre, String premierChamps, String secondChamps, String troisiemeChamps, Class<A> premierType, Class<B> secondType, Class<C> troisiemeType, boolean supprimerAreteOuSommet){
+
+            this.aType = premierType;
+            this.bType = secondType;
+            this.cType = troisiemeType;
 
             /* Création des zones de texte */
             JTextField xField = new JTextField(4);
@@ -94,25 +98,24 @@ public class MainClass extends PApplet {
                 JPanel field = new JPanel(new GridLayout(0,1,2,2));
 
                 if (!aType.isAssignableFrom(NullType.class)) {
-                    text.add(new JLabel(a, SwingConstants.RIGHT));
+                    text.add(new JLabel(premierChamps, SwingConstants.RIGHT));
                     field.add(xField);
                 }
 
                 if (!bType.isAssignableFrom(NullType.class)) {
-                    text.add(new JLabel(b, SwingConstants.RIGHT));
+                    text.add(new JLabel(secondChamps, SwingConstants.RIGHT));
                     field.add(yField);
                 }
 
                 if (!cType.isAssignableFrom(NullType.class)) {
-                    text.add(new JLabel(c, SwingConstants.RIGHT));
+                    text.add(new JLabel(troisiemeChamps, SwingConstants.RIGHT));
                     field.add(zField);
                 }
 
                 // Si l'utilisateur a mal rempli les champs de texte, un message d'erreur s'affiche sur la fenetre
                 if (ok == 2) {
-                    JLabel error_message = new JLabel("Veuillez renseigner les champs avec des valeurs numériques !");
+                    JLabel error_message = new JLabel("Veuillez renseigner les champs avec des valeurs correctes !");
                     error_message.setForeground(Color.RED);
-
                     panel.add(error_message, BorderLayout.NORTH);
                 }
 
@@ -131,66 +134,89 @@ public class MainClass extends PApplet {
 
                 /* Affichage de la fenetre de dialogue, cette méthode est bloquante, tant que
                 * l'utilisateur ne cliquera pas sur OK ou annuler, le code attendra ici */
-                int result = JOptionPane.showConfirmDialog(
-                        frame,
-                        panel,
-                        title,
-                        JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.PLAIN_MESSAGE);
+
+                int result = 99;
+
+                if (supprimerAreteOuSommet){
+                    String[] choices = {"Supprimer", "Annuler"};
+                    result = JOptionPane.showOptionDialog(
+                            null
+                            , premierChamps
+                            , titre
+                            , JOptionPane.YES_NO_OPTION
+                            , JOptionPane.PLAIN_MESSAGE
+                            , null
+                            , choices
+                            , null
+                    );
+                } else {
+                    result = JOptionPane.showConfirmDialog(
+                            frame,
+                            panel,
+                            titre,
+                            JOptionPane.OK_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE);
+                }
 
                 /* Une fois la fenetre fermée, j'enlève le listener, pour pouvoir le refaire si jamais le code doit réouvrir
                 * une nouvelle fenetre*/
                 xField.addAncestorListener(new FocusRequest(true));
 
                 /* Si l'utilisateur clique sur OK je vérifie que ce qu'il a rentré concorde avec les types que mon code a besoin*/
-                if (result == JOptionPane.OK_OPTION) {
-                    try {
-
-                        if (aType.isAssignableFrom(Integer.class)) {
-                            /* ici par exemple, dans le cas ou aType = Integer.class, j'essaye de convertir la valeur
-                            * du premier champs de texte en un entier, si ça ne fonctionne pas, ceci vas générer une erreur
-                            * et grace au block catch{} je vais pouvoir changer la valeur de ok en 2 */
-                            aV = (A) Integer.valueOf(xField.getText());
-                        } else if(aType.isAssignableFrom(String.class)) {
-                            aV = (A) xField.getText();
-                        } else if(aType.isAssignableFrom(Float.class)) {
-                            aV = (A) Float.valueOf(xField.getText());
-                        } else {
-                            ok = 2;
-                        }
-
-                        if (bType.isAssignableFrom(Integer.class)) {
-                            bV = (B) Integer.valueOf(yField.getText());
-                        } else if(bType.isAssignableFrom(String.class)) {
-                            bV = (B) yField.getText();
-                        } else if(bType.isAssignableFrom(Float.class)) {
-                            bV = (B) Float.valueOf(yField.getText());
-                        } else {
-                            ok = 2;
-                        }
-
-                        if (cType.isAssignableFrom(Integer.class)) {
-                            cV = (C) Integer.valueOf(zField.getText());
-                        } else if(cType.isAssignableFrom(String.class)) {
-                            cV = (C) zField.getText();
-                        } else if(cType.isAssignableFrom(Float.class)) {
-                            cV = (C) Float.valueOf(zField.getText());
-                        } else {
-                            ok = 2;
-                        }
-
-                        println(xField.getText() + "	" + yField.getText() + "	" + zField.getText());
-                        println(aV + "	" + bV + "	" + cV);
-
-                        ok = 1;
-                    } catch(Exception e) {
-                        ok = 2;
+                if (supprimerAreteOuSommet){
+                    if (result == 0){
+                        needDelete = true;
                     }
-                } else {
-                    /* Si jamais l'utilisateur clique sur Annuler, ok prend la valeur 1 et me permet de ne pas réouvrir une fenetre*/
                     ok = 1;
-                }
+                } else {
+                    if (result == JOptionPane.OK_OPTION) {
+                        try {
 
+                            if (aType.isAssignableFrom(Integer.class)) {
+                                /* ici par exemple, dans le cas ou aType = Integer.class, j'essaye de convertir la valeur
+                                 * du premier champs de texte en un entier, si ça ne fonctionne pas, ceci vas générer une erreur
+                                 * et grace au block catch{} je vais pouvoir changer la valeur de ok en 2 */
+                                aV = (A) Integer.valueOf(xField.getText());
+                            } else if(aType.isAssignableFrom(String.class)) {
+                                aV = (A) xField.getText();
+                            } else if(aType.isAssignableFrom(Float.class)) {
+                                aV = (A) Float.valueOf(xField.getText());
+                            } else {
+                                ok = 2;
+                            }
+
+                            if (bType.isAssignableFrom(Integer.class)) {
+                                bV = (B) Integer.valueOf(yField.getText());
+                            } else if(bType.isAssignableFrom(String.class)) {
+                                bV = (B) yField.getText();
+                            } else if(bType.isAssignableFrom(Float.class)) {
+                                bV = (B) Float.valueOf(yField.getText());
+                            } else {
+                                ok = 2;
+                            }
+
+                            if (cType.isAssignableFrom(Integer.class)) {
+                                cV = (C) Integer.valueOf(zField.getText());
+                            } else if(cType.isAssignableFrom(String.class)) {
+                                cV = (C) zField.getText();
+                            } else if(cType.isAssignableFrom(Float.class)) {
+                                cV = (C) Float.valueOf(zField.getText());
+                            } else {
+                                ok = 2;
+                            }
+
+                            println(xField.getText() + "	" + yField.getText() + "	" + zField.getText());
+                            println(aV + "	" + bV + "	" + cV);
+
+                            ok = 1;
+                        } catch(Exception e) {
+                            ok = 2;
+                        }
+                    } else {
+                        /* Si jamais l'utilisateur clique sur Annuler, ok prend la valeur 1 et me permet de ne pas réouvrir une fenetre*/
+                        ok = 1;
+                    }
+                }
             }
 
         }
@@ -206,9 +232,13 @@ public class MainClass extends PApplet {
         public C getC(){
             return this.cV;
         }
+
+        public boolean needDelete(){
+            return this.needDelete;
+        }
     }
 
-
+/*
     abstract class GFrame extends JFrame{
         protected int indexInFrameManager;
 
@@ -230,12 +260,14 @@ public class MainClass extends PApplet {
         }
     }
 
-    public class MatriceFrame extends GFrame{
+
+    public class MatriceAdjacenceFrame extends GFrame{
         JPanel panel;
+        private int indexOfGrapheToRepresent;
 
-
-        public MatriceFrame(int i){
-            this.indexInFrameManager = i;
+        public MatriceAdjacenceFrame(int indexInFrameManager, int indexOfGrapheToRepresent){
+            this.indexInFrameManager = indexInFrameManager;
+            this.indexOfGrapheToRepresent = indexOfGrapheToRepresent;
             this.setMinimumSize(new Dimension(200,200));
             //this.setSize(1920,1080);
             this.setLocationRelativeTo(frame);
@@ -244,38 +276,218 @@ public class MainClass extends PApplet {
             this.setContentPane(panel);
 
             this.setVisible(true);
+
+            this.draw();
         }
 
         Color backgroundcolor = new Color(40, 41, 35);
 
+
         @Override
         public void draw(){
+            double height = this.getSize().getHeight();
+            double width = this.getSize().getWidth();
+
             Graphics g = this.panel.getGraphics();
+
             this.panel.setBackground(backgroundcolor);
-            g.fillOval(10,10,100,100);
+
+            g.setColor(backgroundcolor);
+            g.fillRect(0,0, (int)width, (int)height);
+
+            Graphe grapheToDraw = graphe_manager.getGraphe(indexOfGrapheToRepresent-1);
+            //g.fillOval(10,10,100,100);
+            g.setColor(Color.WHITE);
+            g.drawString("Matrice d'adjacence de " + grapheToDraw.getName(), 10, 10);
+            //int[][] matriceAdjacence = matriceAdjacence(grapheToDraw);
             //g.drawArc();
+            //g.drawLine();
+        }
+
+        public int[][] matriceAdjacence(Graphe graphe){
+            int nombreDeSommets = graphe.getAmountOfSommets();
+            int nombreDaretes = graphe.getAmountOfAretes();
+            int[][] matriceAdjacence = new int[nombreDeSommets][nombreDeSommets];
+
+            for (int i = 0; i<matriceAdjacence.length; i++){
+                for (int j = 0; j<matriceAdjacence[i].length; j++){
+                    matriceAdjacence[i][j] = 0;
+                }
+            }
+
+            for (int i = 0; i<nombreDaretes; i++){
+                Arete arete = graphe.getArete(i);
+                if (graphe.getType() == Graphe.ORIENTE_LIBELE || graphe.getType() == Graphe.ORIENTE || graphe.getType() == Graphe.ORIENTE_PONDERE){
+                    matriceAdjacence[arete.getInitial()][arete.getFinale()] = 1;
+                }
+            }
+
+            return matriceAdjacence;
+        }
+    }
+*/
+
+
+    public class MatriceAdjacenceFrame extends PApplet {
+
+        private int indexOfGrapheToRepresent;
+        private int sommetNumber;
+        private int width = 200;
+        private int height = 200;
+
+        Graphe grapheToDraw = graphe_manager.getGraphe(indexOfGrapheToRepresent-1);
+        int[][] matriceAdjacence = matriceAdjacence(grapheToDraw);
+
+        public MatriceAdjacenceFrame(int indexOfGrapheToRepresent){
+            this.indexOfGrapheToRepresent = indexOfGrapheToRepresent;
+            this.sommetNumber = graphe_manager.getGraphe(indexOfGrapheToRepresent-1).getAmountOfSommets();
+
+            println(displayWidth);
+
+            runSketch( new String[] {
+                            //"--display=1",
+                            //"--location=" + ((displayWidth-width)/2) + ',' + ((displayHeight-height)/2),
+                            // "--sketch-path=" + sketchPath(""),
+                            "" }
+                    , this);
+
+
+
+            //java.awt.Window win = ((processing.awt.PSurfaceAWT.SmoothCanvas) this.getSurface().getNative()).getFrame();
+            //addWindowListener(this);
+
+
+        }
+
+
+        public void settings() {
+            size(this.width, this.height);
+            smooth(8);
+
+            //println("Inner's sketchPath: \t\"" + sketchPath("") + "\"");
+            //println("Inner's dataPath: \t\"" + dataPath("") + "\"\n");
+        }
+
+        public void setup() {
+            frameRate(60);
+
+            //removeExitEvent(getSurface());
+
+            java.awt.Window win = ((processing.awt.PSurfaceAWT.SmoothCanvas) getSurface().getNative()).getFrame();
+            for (java.awt.event.WindowListener evt : win.getWindowListeners()){
+                win.removeWindowListener(evt);
+            }
+            win.addWindowListener(new WindowAdapter() {
+                                        public void windowClosing(WindowEvent we){
+                                            //System.out.println("coucou");
+                                            //frame_manager.
+                                        }
+                }
+            );
+
+
+            //this.surface.setTitle("coucou");
+
+            //frameRate(1);
+            //stroke(#FFFF00);
+            strokeWeight(5);
+            this.surface.setResizable(true);
+            this.surface.setTitle("Matrice D'Adjacence");
+            //this.frame.setLocationRelativeTo(mainFrame);
+            //noinspection InnerClassTooDeeplyNested
+        }
+
+        public void draw() {
+
+            if (frameCount%30 == 0){
+                // me fais une action a 2fps
+            }
+            line(width, 0, 0, height);
+
+            //saveFrame( dataPath("screen-####.jpg") );
+            //size((int)random(100,200), 200);
+
+        }
+
+        private void drawMatrix(int[][] matrix){
+
+            int X = 0;
+            int Y = 0;
+
+
+            int matrixLength = matrix.length;
+            int textsize = 20;
+            int ecartVertical = 10;
+            int ecartHorizontal = 10;
+            int lineMatrixHeight = matrixLength*textsize+ecartVertical*matrixLength-1;
+            int cornerRadius = 10;
+
+            fill(255);
+            textSize(textsize);
+
+            arc(X+cornerRadius, Y+cornerRadius, cornerRadius*2, cornerRadius*2, PI/2, PI);
+            line(X,Y+cornerRadius,X,Y+cornerRadius+lineMatrixHeight);
+            arc(X+cornerRadius, Y+cornerRadius+lineMatrixHeight, cornerRadius*2, cornerRadius*2, PI, PI/2*3);
+
+
+            for (int colonne = 0; colonne<matrixLength; colonne++){
+                int textMaxWidth = 0;
+                for (int ligne = 0; ligne<matrixLength; ligne++){
+                    //Attention, ça fonctionne colonne par colonne
+                    int number = matrix[ligne][colonne];
+                    if ((int)MainClass.this.textWidth(Integer.toString(number)) > textMaxWidth){
+                        textMaxWidth = (int)MainClass.this.textWidth(Integer.toString(number));
+                    }
+                }
+
+                for (int ligne = 0; ligne<matrixLength; ligne++){
+                    //Attention, ça fonctionne colonne par colonne
+                    int number = matrix[ligne][colonne];
+                    text(Integer.toString(number),0,0);
+                }
+
+            }
+
+
+            float width = MainClass.this.textWidth("coucou");
         }
     }
 
+
+    public int[][] matriceAdjacence(Graphe graphe){
+        int nombreDeSommets = graphe.getAmountOfSommets();
+        int nombreDaretes = graphe.getAmountOfAretes();
+        int[][] matriceAdjacence = new int[nombreDeSommets][nombreDeSommets];
+
+        for (int i = 0; i<matriceAdjacence.length; i++){
+            for (int j = 0; j<matriceAdjacence[i].length; j++){
+                matriceAdjacence[i][j] = 0;
+            }
+        }
+
+        for (int i = 0; i<nombreDaretes-1; i++){
+            Arete arete = graphe.getArete(i);
+            if (graphe.getType() == Graphe.ORIENTE_LIBELE || graphe.getType() == Graphe.ORIENTE || graphe.getType() == Graphe.ORIENTE_PONDERE){
+                matriceAdjacence[arete.getInitial()][arete.getFinale()] = 1;
+            }
+        }
+
+        return matriceAdjacence;
+    }
+
+
     public class FrameManager{
-        private Liste<GFrame> frames = new Liste<GFrame>();
+        //private Liste<PApplet> frames = new Liste<PApplet>();
 
         public FrameManager(){
 
         }
 
-        public void newMatriceFrame(){
-            this.frames.add(new MatriceFrame(this.frames.size()));
+        public void newMatriceAdjacenceFrame(int indexOfGrapheToRepresent){
+            //this.frames.add(new MatriceAdjacenceFrame(indexOfGrapheToRepresent));
+            new MatriceAdjacenceFrame(indexOfGrapheToRepresent);
         }
-
-        public void draw(){
-            if (this.frames.size() != 0){
-                for (int i=0; i<this.frames.size(); i++){
-                    this.frames.get(i).draw();
-                }
-            }
-        }
-
+    /*
         public void deleteFrame(int indexInFrameManager){
             this.frames.remove(indexInFrameManager);
 
@@ -285,6 +497,7 @@ public class MainClass extends PApplet {
                 }
             }
         }
+    */
     }
 
 
@@ -642,10 +855,15 @@ public class MainClass extends PApplet {
 
         public void setName(String name) {
             this.name = name;
+            //frame_manager.draw();
         }
 
         public Sommet getSommet(int i){
             return this.sommets.get(i-1);
+        }
+
+        public Arete getArete(int i){
+            return  this.aretes.get(i-1);
         }
 
         /* rajoute un sommet a la liste des sommets du graphe, il aura une position aléatoire sur la
@@ -653,22 +871,26 @@ public class MainClass extends PApplet {
         public void addSommet(){
             Sommet nouveau_sommet = new Sommet((int)random(100,width-100), (int)random(100,height-100), sommets.size()+1);
             this.sommets.add(nouveau_sommet);
+            //frame_manager.draw();
         }
 
         /* Ajoute une arrete a la liste des aretes du graphe*/
         public void addArete(int a, int b, float poid){
             Arete nouvelle_arete = new Arete(a, b, poid);
             this.aretes.add(nouvelle_arete);
+            //frame_manager.draw();
         }
 
         public void addArete(int a, int b, String libele){
             Arete nouvelle_arete = new Arete(a, b, libele);
             this.aretes.add(nouvelle_arete);
+            //frame_manager.draw();
         }
 
         public void addArete(int a, int b){
             Arete nouvelle_arete = new Arete(a, b);
             this.aretes.add(nouvelle_arete);
+            //frame_manager.draw();
         }
 
         public void addAreteDialog(int a, int b){
@@ -759,6 +981,34 @@ public class MainClass extends PApplet {
             }
             return "c'est bizare si ça sort ça mdrr";
         }
+
+
+        public void removeSommet(int indexToRemove){
+
+            // on supprime toutes les aretes connectées au sommet
+            for (int i=0; i<this.aretes.size(); i++){
+                if (this.aretes.get(i).getInitial() == indexToRemove || this.aretes.get(i).getFinale() == indexToRemove) {
+                    this.aretes.remove(i);
+                }
+            }
+
+            // on supprime le sommet
+            this.sommets.remove(indexToRemove-1);
+
+            // on change l'index de tout les sommets
+            for (int i = 0; i<this.sommets.size(); i++){
+                this.sommets.get(i).index = i+1;
+            }
+        }
+
+        @Deprecated
+        public void removeArete(int indexToRemove){
+            //frame_manager.draw();
+        }
+
+        public void removeArete(Arete arete){
+            //frame_manager.draw();
+        }
     }
 
 
@@ -766,6 +1016,7 @@ public class MainClass extends PApplet {
         int e = (int)event.getCount();
     }
 
+    JFrame mainFrame = this.frame;
 
     Menu menu;
     JFrame frame;
@@ -800,7 +1051,20 @@ public class MainClass extends PApplet {
     public void mouseReleased(){
 
         if (clic_x == mouseX && clic_y == mouseY && index_sommet_holded != -1 && millis() < millis+500){
-            System.out.println("SELECTIOON " + index_sommet_hover);
+            Dialog dial = new Dialog<NullType, NullType, NullType>(
+                    "Supprimer le sommet ?",
+                    null,
+                    null,
+                    null,
+                    NullType.class,
+                    NullType.class,
+                    NullType.class,
+                    true);
+
+            /* On réculère les valeurs que l'utilisateur a rentré*/
+            if (dial.needDelete()) {
+                graphe_manager.getCurentGraphe().removeSommet(index_sommet_holded);
+            }
         }
 
         index_sommet_holded = -1;
@@ -815,7 +1079,6 @@ public class MainClass extends PApplet {
         clic_x = mouseX;
         clic_y = mouseY;
     }
-
 
     public void setup(){
         surface.setSize(900,400);
@@ -834,6 +1097,8 @@ public class MainClass extends PApplet {
         debuger = new Debuger();
 
         frame_manager = new FrameManager();
+
+
 /*
         String[] args = {"YourSketchNameHere"};
         SecondApplet sa = new SecondApplet();
@@ -870,7 +1135,6 @@ public class MainClass extends PApplet {
         ui_manager.draw();
         graphe_manager.drawCurentGraphe();
         debuger.draw();
-        frame_manager.draw();
     }
 
 
@@ -928,6 +1192,16 @@ public class MainClass extends PApplet {
                 this.getCurentGraphe().draw();
             }
         }
+
+        @Deprecated
+        public void removeArete(Graphe graphe, Arete arete) {
+            //println("coucou");
+        }
+
+        @Deprecated
+        public void removeSommet(Graphe graphe, int index_sommet_holded) {
+            //graphe.removeSommet();
+        }
     }
 
 
@@ -963,7 +1237,7 @@ public class MainClass extends PApplet {
         private void drawRandom() {
             textSize(12);
             String str = "50";
-            float largeur_du_texte = ((SunGraphics2D) g.getNative()).getFontMetrics().stringWidth(str);
+            float largeur_du_texte = textWidth(str);
 
             rectMode(CORNER);
             textAlign(LEFT);
@@ -1096,7 +1370,7 @@ public class MainClass extends PApplet {
             popMatrix();
         }
 
-        public void afficherArete(@NotNull Sommet sommetInitial, Sommet sommetFinal, String texte, int typeDeGraphe, @Nullable Arete arete){
+        public void afficherArete(Sommet sommetInitial, Sommet sommetFinal, String texte, int typeDeGraphe, Arete arete){
 
             float mouseDistToArrete = 50;
 
@@ -1232,7 +1506,7 @@ public class MainClass extends PApplet {
                 if (typeDeGraphe == Graphe.ORIENTE_LIBELE || typeDeGraphe == Graphe.ORIENTE_PONDERE || typeDeGraphe == Graphe.NON_ORIENTE_LIBELE || typeDeGraphe == Graphe.NON_ORIENTE_PONDERE){
 
                     float longueurLigne = dist(x1, y1, x2, y2);
-                    float longueureDuTexte = ((SunGraphics2D) g.getNative()).getFontMetrics().stringWidth(texte);
+                    float longueureDuTexte = textWidth(texte);
 
                     int ecartTexte = 5;
 
@@ -1282,21 +1556,21 @@ public class MainClass extends PApplet {
             }
 
             if (isCliked && !in_search_of_top_to_dock){
-                Dialog dial = new Dialog<Integer, Integer, Float>(
-                        "Changer valeur arrete",
-                        "Sommet de départ de l'arête :",
-                        "Sommet de fin de l'arête :",
-                        "Coût de l'arête :",
-                        Integer.class,
-                        Integer.class,
-                        Float.class);
+                // ----------------------------------------------------------------- MODIFICATION DE L'ARETE ----------
+                    Dialog dial = new Dialog<NullType, NullType, NullType>(
+                            "Suppriler l'arête ?",
+                            null,
+                            null,
+                            null,
+                            NullType.class,
+                            NullType.class,
+                            NullType.class,
+                            true);
 
-                /* On réculère les valeurs que l'utilisateur a rentré*/
-                if (dial.getA() != null && dial.getB() != null && dial.getC() != null) {
-                    int a = (int)dial.getA();
-                    int b = (int)dial.getB();
-                    float c = (float)dial.getC();
-                }
+                    /* On réculère les valeurs que l'utilisateur a rentré*/
+                    if (dial.needDelete()) {
+                        graphe_manager.removeArete(graphe_manager.getCurentGraphe(), arete);
+                    }
             }
 
             noStroke();
@@ -1582,14 +1856,14 @@ public class MainClass extends PApplet {
 
             else if (src == action_calcul_matrice_transitive) {
                 System.out.println("Calcul de la matrice transitive");
-                frame_manager.newMatriceFrame();
-
+                //frame_manager.newMatriceFrame();
+                //frame_manager.draw();
             }
 
             else if (src == action_calcul_matrice_adjacente) {
                 System.out.println("Calcul de la matrice adjacente");
-                frame_manager.newMatriceFrame();
-
+                frame_manager.newMatriceAdjacenceFrame(graphe_manager.getNumberOfCurentGrahe());
+                //frame_manager.draw();
             }
 
             else if (src == action_quitter) {
