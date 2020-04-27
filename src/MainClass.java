@@ -7,8 +7,11 @@
 * */
 
 
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import processing.core.PApplet;
 import processing.event.MouseEvent;
+import sun.java2d.SunGraphics2D;
 
 import javax.lang.model.type.NullType;
 import javax.swing.*;
@@ -20,10 +23,15 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import java.awt.Color;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.NumberFormat;
 import java.util.Locale;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import javax.swing.filechooser.FileFilter;
 import java.lang.Integer;
 
 public class MainClass extends PApplet {
@@ -70,6 +78,7 @@ public class MainClass extends PApplet {
         Dialog(String title, String a, String b, String c, Class<A> tA, Class<B> tB, Class<C> tC){
             this(title, a, b, c, tA, tB, tC, false);
         }
+
 
 
         Dialog(String titre, String premierChamps, String secondChamps, String troisiemeChamps, Class<A> premierType, Class<B> secondType, Class<C> troisiemeType, boolean supprimerAreteOuSommet){
@@ -136,6 +145,7 @@ public class MainClass extends PApplet {
                 * l'utilisateur ne cliquera pas sur OK ou annuler, le code attendra ici */
 
                 int result = 99;
+                
 
                 if (supprimerAreteOuSommet){
                     String[] choices = {"Supprimer", "Annuler"};
@@ -332,8 +342,6 @@ public class MainClass extends PApplet {
 
         private int indexOfGrapheToRepresent;
         private int sommetNumber;
-        private int width = 200;
-        private int height = 200;
 
         Graphe grapheToDraw = graphe_manager.getGraphe(indexOfGrapheToRepresent-1);
         int[][] matriceAdjacence = matriceAdjacence(grapheToDraw);
@@ -342,7 +350,7 @@ public class MainClass extends PApplet {
             this.indexOfGrapheToRepresent = indexOfGrapheToRepresent;
             this.sommetNumber = graphe_manager.getGraphe(indexOfGrapheToRepresent-1).getAmountOfSommets();
 
-            println(displayWidth);
+            //println(displayWidth);
 
             runSketch( new String[] {
                             //"--display=1",
@@ -361,7 +369,9 @@ public class MainClass extends PApplet {
 
 
         public void settings() {
-            size(this.width, this.height);
+            int fwidth = 200;
+            int fheight = 200;
+            size(fwidth, fheight);
             smooth(8);
 
             //println("Inner's sketchPath: \t\"" + sketchPath("") + "\"");
@@ -369,7 +379,7 @@ public class MainClass extends PApplet {
         }
 
         public void setup() {
-            frameRate(60);
+            frameRate(4);
 
             //removeExitEvent(getSurface());
 
@@ -379,8 +389,7 @@ public class MainClass extends PApplet {
             }
             win.addWindowListener(new WindowAdapter() {
                                         public void windowClosing(WindowEvent we){
-                                            //System.out.println("coucou");
-                                            //frame_manager.
+                                            MatriceAdjacenceFrame.super.stop();
                                         }
                 }
             );
@@ -390,7 +399,6 @@ public class MainClass extends PApplet {
 
             //frameRate(1);
             //stroke(#FFFF00);
-            strokeWeight(5);
             this.surface.setResizable(true);
             this.surface.setTitle("Matrice D'Adjacence");
             //this.frame.setLocationRelativeTo(mainFrame);
@@ -399,10 +407,21 @@ public class MainClass extends PApplet {
 
         public void draw() {
 
+            background(ui_manager.couleur_background);
+
             if (frameCount%30 == 0){
                 // me fais une action a 2fps
             }
-            line(width, 0, 0, height);
+
+            int[][] matrix = {
+                    {1, 0, 1, 1, 1, 1},
+                    {0, 150, 0, 1, 1, 1},
+                    {0, 1, 0, 1, 1, 1},
+                    {0, 1, 0, 150, 1, 1},
+                    {0, 1, 0, 1, 1, 1},
+                    {0, 0, 1, 1, 150, 1}};
+
+            drawMatrix(matriceAdjacence(graphe_manager.getCurentGraphe()));
 
             //saveFrame( dataPath("screen-####.jpg") );
             //size((int)random(100,200), 200);
@@ -414,42 +433,97 @@ public class MainClass extends PApplet {
             int X = 0;
             int Y = 0;
 
+            line(X,Y,X,Y);
+
 
             int matrixLength = matrix.length;
-            int textsize = 20;
-            int ecartVertical = 10;
+            int textsize = 12;
+            int ecartVertical = 2;
             int ecartHorizontal = 10;
-            int lineMatrixHeight = matrixLength*textsize+ecartVertical*matrixLength-1;
+            int lineMatrixHeight = matrixLength*textsize+ecartVertical*(matrixLength-1);
             int cornerRadius = 10;
 
-            fill(255);
             textSize(textsize);
 
-            arc(X+cornerRadius, Y+cornerRadius, cornerRadius*2, cornerRadius*2, PI/2, PI);
-            line(X,Y+cornerRadius,X,Y+cornerRadius+lineMatrixHeight);
-            arc(X+cornerRadius, Y+cornerRadius+lineMatrixHeight, cornerRadius*2, cornerRadius*2, PI, PI/2*3);
 
+            int lastMaxWidth = 0;
 
             for (int colonne = 0; colonne<matrixLength; colonne++){
                 int textMaxWidth = 0;
                 for (int ligne = 0; ligne<matrixLength; ligne++){
                     //Attention, ça fonctionne colonne par colonne
                     int number = matrix[ligne][colonne];
-                    if ((int)MainClass.this.textWidth(Integer.toString(number)) > textMaxWidth){
-                        textMaxWidth = (int)MainClass.this.textWidth(Integer.toString(number));
+                    if ((int)textWidth(Integer.toString(number)) > textMaxWidth){
+                        textSize(textsize);
+                        textMaxWidth = (int)textWidth(Integer.toString(number));
+                    }
+                }
+
+                lastMaxWidth = ecartHorizontal + textMaxWidth + lastMaxWidth;
+            }
+
+            //println(width);
+
+            pushMatrix();
+
+            float scale = 1;
+            float newXPos = ((float)(width-lastMaxWidth-ecartHorizontal))/2f;
+
+            if (lastMaxWidth>width){
+                scale=(float)width/(float)(lastMaxWidth+ecartHorizontal);
+                scale((float)width/(float)(lastMaxWidth+ecartHorizontal));
+                newXPos = 0;
+            }
+
+            println((((float)(width-lastMaxWidth-ecartHorizontal))/2f)*scale);
+            translate(newXPos,Y);
+
+            lastMaxWidth = 0;
+
+            noFill();
+            strokeWeight(2);
+            stroke(255);
+            arc(X+cornerRadius, Y+cornerRadius, cornerRadius*2, cornerRadius*2, PI, PI/2*3);
+            line(X,Y+cornerRadius,X,Y+cornerRadius+lineMatrixHeight);
+            arc(X+cornerRadius, Y+cornerRadius+lineMatrixHeight, cornerRadius*2, cornerRadius*2, PI/2, PI);
+
+            for (int colonne = 0; colonne<matrixLength; colonne++){
+                int textMaxWidth = 0;
+                for (int ligne = 0; ligne<matrixLength; ligne++){
+                    //Attention, ça fonctionne colonne par colonne
+                    int number = matrix[ligne][colonne];
+                    if ((int)textWidth(Integer.toString(number)) > textMaxWidth){
+
+                        textSize(textsize);
+
+                        textMaxWidth = (int)textWidth(Integer.toString(number));
                     }
                 }
 
                 for (int ligne = 0; ligne<matrixLength; ligne++){
                     //Attention, ça fonctionne colonne par colonne
                     int number = matrix[ligne][colonne];
-                    text(Integer.toString(number),0,0);
+                    fill(0);
+                    textAlign(CENTER);
+                    textSize(textsize);
+                    fill(255);
+                    text(Integer.toString(number),ecartHorizontal+textMaxWidth/2+lastMaxWidth,Y+cornerRadius+ecartVertical*(ligne)+textsize*(ligne+1));
+                    //println(textMaxWidth);
                 }
+
+                lastMaxWidth = ecartHorizontal + textMaxWidth + lastMaxWidth;
 
             }
 
+            noFill();
+            strokeWeight(2);
+            arc(lastMaxWidth+ecartHorizontal-cornerRadius, Y+cornerRadius, cornerRadius*2, cornerRadius*2, PI/2*3, TWO_PI);
+            line(lastMaxWidth+ecartHorizontal,Y+cornerRadius,lastMaxWidth+ecartHorizontal,Y+cornerRadius+lineMatrixHeight);
+            arc(lastMaxWidth+ecartHorizontal-cornerRadius, Y+cornerRadius+lineMatrixHeight, cornerRadius*2, cornerRadius*2, 0, PI/2);
 
-            float width = MainClass.this.textWidth("coucou");
+            popMatrix();
+
+            //float width = MainClass.this.textWidth("coucou");
         }
     }
 
@@ -465,14 +539,16 @@ public class MainClass extends PApplet {
             }
         }
 
-        for (int i = 0; i<nombreDaretes-1; i++){
+        for (int i = 1; i<=nombreDaretes; i++){
             Arete arete = graphe.getArete(i);
             if (graphe.getType() == Graphe.ORIENTE_LIBELE || graphe.getType() == Graphe.ORIENTE || graphe.getType() == Graphe.ORIENTE_PONDERE){
-                matriceAdjacence[arete.getInitial()][arete.getFinale()] = 1;
+                matriceAdjacence[arete.getInitial()-1][arete.getFinale()-1] = 1;
             }
         }
 
         return matriceAdjacence;
+
+
     }
 
 
@@ -609,34 +685,34 @@ public class MainClass extends PApplet {
     * l'affichage de l'arete est dirrectement implémenté dans cette classe avec la méthode draw()*/
     public class Arete{
         /* Prend en variable de classe le numéro de son sommet de départ ainsi que de fin et une valeur propre a l'instance*/
-        private int sommet_initial;
-        private int sommet_final;
+        private Sommet sommet_initial;
+        private Sommet sommet_final;
         private float poid;
         private String libele;
 
         public Arete(int i, int f, float c){
-            this.sommet_initial = i;
-            this.sommet_final = f;
+            this.sommet_initial = graphe_manager.getCurentGraphe().getSommet(i);
+            this.sommet_final = graphe_manager.getCurentGraphe().getSommet(f);
             this.poid = c;
         }
 
         public Arete(int i, int f, String libele){
-            this.sommet_initial = i;
-            this.sommet_final = f;
+            this.sommet_initial = graphe_manager.getCurentGraphe().getSommet(i);
+            this.sommet_final = graphe_manager.getCurentGraphe().getSommet(f);
             this.libele = libele;
         }
 
         public Arete(int i, int f){
-            this.sommet_initial = i;
-            this.sommet_final = f;
+            this.sommet_initial = graphe_manager.getCurentGraphe().getSommet(i);
+            this.sommet_final = graphe_manager.getCurentGraphe().getSommet(f);
         }
 
         public int getInitial(){
-            return this.sommet_initial;
+            return this.sommet_initial.index;
         }
 
         public int getFinale(){
-            return this.sommet_final;
+            return this.sommet_final.index;
         }
 
         public float getPoid(){
@@ -652,11 +728,11 @@ public class MainClass extends PApplet {
         }
 
         public void setInitial(int i){
-            this.sommet_initial = i;
+            this.sommet_initial = graphe_manager.getCurentGraphe().getSommet(i);
         }
 
         public void setFinale(int f){
-            this.sommet_final = f;
+            this.sommet_final = graphe_manager.getCurentGraphe().getSommet(f);
         }
 
         public void setPoid(float c){
@@ -667,8 +743,8 @@ public class MainClass extends PApplet {
 
             Graphe g = graphe_manager.getCurentGraphe();
 
-            Sommet sommetinitial = g.getSommet(this.sommet_initial);
-            Sommet sommetfinal = g.getSommet(this.sommet_final);
+            Sommet sommetinitial = this.sommet_initial;
+            Sommet sommetfinal = this.sommet_final;
 
             int type = g.getType();
             String str = "";
@@ -986,9 +1062,9 @@ public class MainClass extends PApplet {
         public void removeSommet(int indexToRemove){
 
             // on supprime toutes les aretes connectées au sommet
-            for (int i=0; i<this.aretes.size(); i++){
-                if (this.aretes.get(i).getInitial() == indexToRemove || this.aretes.get(i).getFinale() == indexToRemove) {
-                    this.aretes.remove(i);
+            for (int i=this.aretes.size(); i>0; i--){
+                if (this.aretes.get(i-1).getInitial() == indexToRemove || this.aretes.get(i-1).getFinale() == indexToRemove) {
+                    this.aretes.remove(i-1);
                 }
             }
 
@@ -1007,7 +1083,13 @@ public class MainClass extends PApplet {
         }
 
         public void removeArete(Arete arete){
-            //frame_manager.draw();
+            println("coucou");
+            for (int i=0; i<this.aretes.size(); i++){
+                if (arete == this.aretes.get(i)){
+                    this.aretes.remove(i);
+                    return;
+                }
+            }
         }
     }
 
@@ -1053,7 +1135,7 @@ public class MainClass extends PApplet {
         if (clic_x == mouseX && clic_y == mouseY && index_sommet_holded != -1 && millis() < millis+500){
             Dialog dial = new Dialog<NullType, NullType, NullType>(
                     "Supprimer le sommet ?",
-                    null,
+                    "supprimer le sommet n°" + index_sommet_holded + " ?",
                     null,
                     null,
                     NullType.class,
@@ -1064,6 +1146,8 @@ public class MainClass extends PApplet {
             /* On réculère les valeurs que l'utilisateur a rentré*/
             if (dial.needDelete()) {
                 graphe_manager.getCurentGraphe().removeSommet(index_sommet_holded);
+                index_sommet_hover = -1;
+                mousePressed = false;
             }
         }
 
@@ -1081,6 +1165,16 @@ public class MainClass extends PApplet {
     }
 
     public void setup(){
+
+
+        try {
+            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        frameRate(200);
         surface.setSize(900,400);
         surface.setResizable(true);
         frame = (JFrame) ((processing.awt.PSurfaceAWT.SmoothCanvas)this.getSurface().getNative()).getFrame();
@@ -1117,7 +1211,8 @@ public class MainClass extends PApplet {
         //println(g.textFont.width('\n'));
         //println(g.textFont.getSize());
 
-        //SunGraphics2D holo = ((SunGraphics2D) g.getNative()).getFontMetrics().stringWidth("coucou les loulou");
+
+        int holo = ((SunGraphics2D) g.getNative()).getFontMetrics().stringWidth("coucou les loulou");
 
         //println(graphics.getFontMetrics());
         //((SunGraphics2D) g.getNative()).getFontMetrics().stringWidth("coucou les loulouu")
@@ -1135,6 +1230,9 @@ public class MainClass extends PApplet {
         ui_manager.draw();
         graphe_manager.drawCurentGraphe();
         debuger.draw();
+
+        //println(graphe_manager.getCurentGraphe().sommets.size());
+
     }
 
 
@@ -1231,7 +1329,25 @@ public class MainClass extends PApplet {
             this.afficherOnglets();
             this.afficherAretesEnCourDeCreation();
             this.afficherPiedDePage();
+            this.afficherAideAdaptative();
             //this.drawRandom();
+        }
+
+        private void afficherAideAdaptative() {
+            if (graphe_manager.getAmountOfGraphe() == 0){
+                // y'a pas de graphes alors on envoi l'aide a la création d'un graphe
+                textAlign(CENTER);
+                textSize(32);
+                fill(0);
+                text("aide a la création d'un graphe", (int)(width/2)-2, (int)(height/2)-2);
+                fill(255);
+                text("aide a la création d'un graphe", (int)(width/2), (int)(height/2));
+            } else if (graphe_manager.getCurentGraphe().getAmountOfSommets() == 0){
+                // y'a un graphe mais y'a pas de sommet alors on envoi l'aide a la création de sommet et d'aretes
+                textAlign(CENTER);
+                textSize(32);
+                text("aide a la création de sommet et d'aretes", (int)(width/2), (int)(height/2));
+            }
         }
 
         private void drawRandom() {
@@ -1558,7 +1674,7 @@ public class MainClass extends PApplet {
             if (isCliked && !in_search_of_top_to_dock){
                 // ----------------------------------------------------------------- MODIFICATION DE L'ARETE ----------
                     Dialog dial = new Dialog<NullType, NullType, NullType>(
-                            "Suppriler l'arête ?",
+                            "Supprimer l'arête ?",
                             null,
                             null,
                             null,
@@ -1569,7 +1685,11 @@ public class MainClass extends PApplet {
 
                     /* On réculère les valeurs que l'utilisateur a rentré*/
                     if (dial.needDelete()) {
-                        graphe_manager.removeArete(graphe_manager.getCurentGraphe(), arete);
+                        graphe_manager.getCurentGraphe().removeArete(arete);
+
+                        mousePressed = false;
+                        index_arete_hover = -1;
+                        arete_hover = null;
                     }
             }
 
@@ -1848,6 +1968,55 @@ public class MainClass extends PApplet {
 
             }
 
+            else if (src == action_ouvrir_un_graphe){
+                JFileChooser dialogue = new JFileChooser(new File("."));
+                //dialogue.addChoosableFileFilter(new GRAPHESaveFilter());
+                dialogue.setFileFilter(new GRAPHESaveFilter());
+                dialogue.setDialogTitle("Ouvrir un graphe");
+                dialogue.setDialogType(JFileChooser.OPEN_DIALOG);
+                PrintWriter out = null;
+                File file = null;
+
+                if (dialogue.showOpenDialog(frame)==
+                        JFileChooser.APPROVE_OPTION) {
+                    file = dialogue.getSelectedFile();
+                    try {
+                        out = new PrintWriter(new FileWriter(file.getPath(), true));
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    out.println("sortie");
+                    out.close();
+                }
+
+                System.out.println(out);
+            }
+
+            else if (src == action_enregistrer_sous){
+
+                JFileChooser dialogue = new JFileChooser(new File("."));
+                //dialogue.addChoosableFileFilter(new GRAPHESaveFilter());
+                dialogue.setFileFilter(new GRAPHESaveFilter());
+                dialogue.setDialogTitle("Sauvegarder sous");
+                dialogue.setDialogType(JFileChooser.SAVE_DIALOG);
+                dialogue.setSelectedFile(new File(graphe_manager.getCurentGraphe().getName() + ".graphe"));
+                PrintWriter out = null;
+                File file;
+
+                if (dialogue.showSaveDialog(frame)==
+                        JFileChooser.APPROVE_OPTION) {
+                    file = dialogue.getSelectedFile();
+                    try {
+                        out = new PrintWriter(new FileWriter(file.getPath(), true));
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    out.println("sortie");
+                    out.close();
+                }
+
+            }
+
             else if (src == action_supprimer_un_sommet) {
                 System.out.println("Supprimer un sommet");
 
@@ -1925,6 +2094,24 @@ public class MainClass extends PApplet {
         }
     }
 
+    public class GRAPHESaveFilter extends FileFilter {
+        @Override
+        public boolean accept(File f) {
+            if (f.isDirectory()) {
+                return false;
+            }
+
+            String s = f.getName().toLowerCase();
+
+            return s.endsWith(".graphe");
+        }
+
+        @Override
+        public String getDescription() {
+            return "*.graphe,*.GRAPHE";
+        }
+    }
+
 
     /* Petite classe me permettant de mettre mon curseur sur un champs de texte
     * Je l'utilise pour régler un petit problème de ma fenetre de Dialogue, je voulais que mon curseur sois dirrectement
@@ -1980,6 +2167,7 @@ public class MainClass extends PApplet {
         public void draw(){
             if (this.isActive){
 
+                textSize(12);
                 fill(255);
                 textAlign(LEFT);
 
@@ -1996,7 +2184,12 @@ public class MainClass extends PApplet {
                 text("Sommet sélectionné : " + Integer.toString(index_sommet_holded), 20, 50 + 20 *i);
                 i++;
                 i++;
+                text("Arete survolée : " + "@Deprecated", 20, 50 + 20 *i);
+                i++;
                 text("Arete survolée : " + arete_hover, 20, 50 + 20 *i);
+                i++;
+                i++;
+                text("Mouse pressed : " + mousePressed, 20, 50 + 20 *i);
                 i++;
                 i++;
                 text("En train de relier des sommets ? : " + Boolean.toString(in_search_of_top_to_dock), 20, 50 + 20 *i);
@@ -2009,4 +2202,5 @@ public class MainClass extends PApplet {
             }
         }
     }
+
 }
