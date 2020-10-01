@@ -1,0 +1,169 @@
+public class lol {
+    int dimension(graphe g) //en fonction du graphe de départ, donne la taille des matrices adjacente et transitive
+    {
+        int taille = g.n;
+
+        return taille;
+    }
+
+    /************************************************************************************************************************************************************************************/
+
+    int[][] produit (int[][] M1, int[][] M2, graphe g) //effectue le produit de deux matrices
+    {
+        int taille = dimension(g);
+
+        int i = taille;
+        int j = taille;
+        int m = taille;
+        int n = taille;
+        int[][] M3 = new int[i][n];
+        // crée la matrice M3 résultante
+
+        for (int t1=0; t1<i; t1++)
+            for (int t2=0; t2<n; t2++)
+            {
+                M3[t1][t2]=0;
+            }
+        // initialise tous les coefficients de M3 à 0
+
+        for (int lignes=0; lignes<i; lignes++)
+            for (int colonnes=0; colonnes<n; colonnes++)
+                for (int rang=0; rang<m; rang++)
+                {
+                    M3[lignes][colonnes] = M3[lignes][colonnes] + M1[lignes][rang]*M2[rang][colonnes];
+                }
+        //effectue la multiplication par coefficient (Mat(M3) = M3(lignes, colonnes))
+
+        return M3;
+    }
+
+    /************************************************************************************************************************************************************************************/
+
+    int[][] somme (int[][] M1, int[][] M2, graphe g) //fait la somme de deux matrices
+    {
+        int dimension = dimension(g);
+
+        int lignes = dimension;
+        int colonnes = dimension;
+        int [][] mat = new int[lignes][colonnes];
+        //crée la matrice résultante
+
+        for (int i=0; i<lignes; i++)
+            for (int j=0; j<colonnes; j++)
+            {
+                mat[i][j] = M1[i][j] + M2[i][j];
+            }
+        //effectue la somme par coefficient(Mat(mat) = mat(lignes, colonnes))
+
+        return mat;
+    }
+
+    /************************************************************************************************************************************************************************************/
+
+    boolean egal(int[][] M1, int[][] M2, graphe g) //teste si deux matrices sont égales
+    {
+        int dimension = dimension(g);
+
+        int vf = 1; //crée un entier témoin
+
+        int lignes = dimension;
+        int colonnes = dimension;
+        for (int i=0; i<lignes; i++)
+            for (int j=0; j<colonnes; j++)
+            {
+                boolean verification = (M1[i][j] == M2[i][j]); //renvoie vrai si les coefficients d'indice i,j sont égaux
+                if (verification == false)
+                {
+                    vf = 0; //dès que deux coefficients ne sont pas égaux, le témoin prend la valeur 0
+                }
+            }
+        if (vf == 0)
+            return false;
+        else
+            return true;
+    }
+
+    /************************************************************************************************************************************************************************************/
+
+    int [][] degre (int n, int [][] M, graphe g) //calcule et renvoie la matrice M calculée au degré n
+    {
+        int dimension = dimension(g);
+        int [][] mat_deg = new int[dimension][dimension];
+        mat_deg = M;
+        for (int i=1; i<n; i++)
+        {
+            mat_deg = produit(mat_deg, M, g);
+        }
+
+        return mat_deg;
+    }
+
+    /************************************************************************************************************************************************************************************/
+
+    int[][] matricetransitive(graphe g) //calcule la matrice transitive du graphe g
+    {
+        int [][] matrice_adjacence = adjacence(g);
+        //crée la matrice d'adjacence du graphe rentré en paramètre
+
+        int [][] matrice_identite = new int [g.n][g.n];
+        for (int i=0; i<g.n; i++)
+            for (int j=0; j<g.n; j++)
+            {
+                if (i==j)
+                    matrice_identite[i][j] = 1;
+                else
+                    matrice_identite[i][j] = 0;
+            }
+        //crée la matrice identité de meme taille que la matrice d'adjacence
+
+        int [][] MT = somme(matrice_identite, matrice_adjacence, g);
+        // MT = M^0 + M^1
+
+        int degre_matrice = 2;
+        while (egal(degre(degre_matrice, matrice_adjacence, g), degre(degre_matrice-1, matrice_adjacence, g), g) == false) //tant que MT(k-1) est différent de MT(k)
+        {
+            MT = somme(MT, degre(degre_matrice, matrice_adjacence, g), g);
+            degre_matrice++;
+        }
+
+        //calcule MT(k)
+
+
+  /* AUTRE SOLUTION :
+   on cherche à avoir MT(k-1) = MT(k) (cf. TP)
+   donc on veut M^0+M^1+...+M^(k-1) = M^0+M^1+...+M^(k-1)+M^k
+   donc on veut  M^0+M^1+...+M^(k-1)+M^k - M^0+M^1+...+M^(k-1) = *matrice nulle*
+   donc on veut M^k = *matrice nulle* */
+
+
+  /* int [][] mat_nulle = new int[g.n][g.n];
+   for (int i=0; i<g.n; i++)
+   for (int j=0; j<g.n; j++)
+   {
+   mat_nulle [i][j] = 0;
+   }
+   //crée la matrice nulle de meme taille que la matrice d'adjacence
+
+   int [][] MT = somme(matrice_identite, matrice_adjacence, g);
+   // MT = M^0 + M^1
+
+   int degre_matrice = 2;
+   while (egal(degre(degre_matrice, matrice_adjacence, g), mat_nulle, g) == false)
+   {
+   MT = somme(MT, degre(degre_matrice, matrice_adjacence, g), g);
+   degre_matrice++;
+   }
+   //calcule MT(k)*/
+
+        for (int i=0; i<g.n; i++)
+            for (int j=0; j<g.n; j++)
+            {
+                if (MT[i][j]>1)
+                {
+                    MT[i][j]=1;
+                }
+            }
+
+        return MT;
+    }
+}

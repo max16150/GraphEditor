@@ -7,8 +7,6 @@
 * */
 
 
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import processing.core.PApplet;
 import processing.event.MouseEvent;
 import sun.java2d.SunGraphics2D;
@@ -28,6 +26,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.Locale;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
@@ -215,8 +214,8 @@ public class MainClass extends PApplet {
                                 ok = 2;
                             }
 
-                            println(xField.getText() + "	" + yField.getText() + "	" + zField.getText());
-                            println(aV + "	" + bV + "	" + cV);
+                            //println(xField.getText() + "	" + yField.getText() + "	" + zField.getText());
+                            //println(aV + "	" + bV + "	" + cV);
 
                             ok = 1;
                         } catch(Exception e) {
@@ -338,17 +337,24 @@ public class MainClass extends PApplet {
 */
 
 
-    public class MatriceAdjacenceFrame extends PApplet {
+    public class MatriceFrame extends PApplet {
+        public static final int ADJACENCE = 1;
+        public static final int TRANSITIVE = 2;
 
         private int indexOfGrapheToRepresent;
-        private int sommetNumber;
+        private final int type;
+        private boolean locked;
+
+        //private int sommetNumber;
 
         Graphe grapheToDraw = graphe_manager.getGraphe(indexOfGrapheToRepresent-1);
         int[][] matriceAdjacence = matriceAdjacence(grapheToDraw);
 
-        public MatriceAdjacenceFrame(int indexOfGrapheToRepresent){
+        public MatriceFrame(int indexOfGrapheToRepresent, int type){
             this.indexOfGrapheToRepresent = indexOfGrapheToRepresent;
-            this.sommetNumber = graphe_manager.getGraphe(indexOfGrapheToRepresent-1).getAmountOfSommets();
+            this.type = type;
+
+            //this.sommetNumber = graphe_manager.getGraphe(indexOfGrapheToRepresent-1).getAmountOfSommets();
 
             //println(displayWidth);
 
@@ -369,10 +375,14 @@ public class MainClass extends PApplet {
 
 
         public void settings() {
-            int fwidth = 200;
+
+
+            int fwidth = 300;
             int fheight = 200;
             size(fwidth, fheight);
             smooth(8);
+
+            //frame.setMinimumSize(new Dimension(490,200));
 
             //println("Inner's sketchPath: \t\"" + sketchPath("") + "\"");
             //println("Inner's dataPath: \t\"" + dataPath("") + "\"\n");
@@ -384,12 +394,13 @@ public class MainClass extends PApplet {
             //removeExitEvent(getSurface());
 
             java.awt.Window win = ((processing.awt.PSurfaceAWT.SmoothCanvas) getSurface().getNative()).getFrame();
+            win.setMinimumSize(new Dimension(300,200));
             for (java.awt.event.WindowListener evt : win.getWindowListeners()){
                 win.removeWindowListener(evt);
             }
             win.addWindowListener(new WindowAdapter() {
                                         public void windowClosing(WindowEvent we){
-                                            MatriceAdjacenceFrame.super.stop();
+                                            MatriceFrame.super.stop();
                                         }
                 }
             );
@@ -399,6 +410,8 @@ public class MainClass extends PApplet {
 
             //frameRate(1);
             //stroke(#FFFF00);
+
+
             this.surface.setResizable(true);
             this.surface.setTitle("Matrice D'Adjacence");
             //this.frame.setLocationRelativeTo(mainFrame);
@@ -421,7 +434,13 @@ public class MainClass extends PApplet {
                     {0, 1, 0, 1, 1, 1},
                     {0, 0, 1, 1, 150, 1}};
 
-            drawMatrix(matriceAdjacence(graphe_manager.getCurentGraphe()));
+            drawBandeau();
+
+            if (this.type == MatriceFrame.ADJACENCE){
+                drawMatrix(matriceAdjacence(graphe_manager.getCurentGraphe()));
+            } else if (this.type == MatriceFrame.TRANSITIVE){
+                drawMatrix(matriceTransitive(graphe_manager.getCurentGraphe()));
+            }
 
             //saveFrame( dataPath("screen-####.jpg") );
             //size((int)random(100,200), 200);
@@ -431,9 +450,7 @@ public class MainClass extends PApplet {
         private void drawMatrix(int[][] matrix){
 
             int X = 0;
-            int Y = 0;
-
-            line(X,Y,X,Y);
+            int Y = 30;
 
 
             int matrixLength = matrix.length;
@@ -475,7 +492,7 @@ public class MainClass extends PApplet {
                 newXPos = 0;
             }
 
-            println((((float)(width-lastMaxWidth-ecartHorizontal))/2f)*scale);
+            //println((((float)(width-lastMaxWidth-ecartHorizontal))/2f)*scale);
             translate(newXPos,Y);
 
             lastMaxWidth = 0;
@@ -525,6 +542,105 @@ public class MainClass extends PApplet {
 
             //float width = MainClass.this.textWidth("coucou");
         }
+
+        private void drawBandeau(){
+
+            final int couleur_bandeau_supperieur =    color(24, 25, 21);
+
+            noStroke();
+            fill(couleur_bandeau_supperieur);
+            rect(0,0, width, 35);
+            fill(255);
+            textAlign(LEFT);
+            textSize(12);
+            text("matrice d'adjacence du graphe :", 10, 15);
+            text(this.grapheToDraw.getName(), 10, 30);
+        }
+
+    }
+
+
+    public int[][] matriceTransitive(Graphe graphe){
+        int nombreDeSommets = graphe.getAmountOfSommets();
+
+        int[][] matrice_adjacence = matriceAdjacence(graphe);
+
+        int[][] matrice_identite = new int[nombreDeSommets][nombreDeSommets];
+        for (int i=0; i<nombreDeSommets; i++){
+            for (int j = 0; j < nombreDeSommets; j++){
+                if(i == j){
+                    matrice_identite[i][j] = 1;
+                } else {
+                    matrice_identite[i][j] = 0;
+                }
+            }
+        }
+
+
+
+        return matrice_adjacence;
+    }
+
+
+    public void fordBellman(int sommetDeDepart){
+
+        int nombreDeSommets = graphe_manager.getCurentGraphe().getAmountOfSommets();
+        int nombreDaretes = graphe_manager.getCurentGraphe().getAmountOfAretes();
+        Graphe graphe = graphe_manager.getCurentGraphe();
+
+        float poidTable[][] = new float[nombreDeSommets][nombreDeSommets+1];
+        String sommetsTable[][] = new String[nombreDeSommets][nombreDeSommets+1];
+
+        for (int i = 0; i<poidTable.length; i++){
+            Arrays.fill(poidTable[i], Float.MAX_VALUE);
+        }
+
+        for (int i = 0; i<poidTable.length+1; i++){
+            poidTable[sommetDeDepart-1][i] = 0;
+        }
+
+
+        for (int step = 1; step<nombreDeSommets+1; step++){
+
+            for (int i = 0; i<nombreDaretes; i++){
+
+                Arete arete = graphe.getArete(i+1);
+                int sommetInitial = arete.getInitial()-1;
+                int sommetFinal = arete.getFinale()-1;
+                float poid = arete.getPoid();
+
+                if (poidTable[sommetInitial][step-1] != Float.MAX_VALUE){
+
+                    if (poid + poidTable[sommetInitial][step-1] < poidTable[sommetFinal][step-1]){
+                        if (poid + poidTable[sommetInitial][step-1] < poidTable[sommetFinal][step]){
+
+                            poidTable[sommetFinal][step] = poid + poidTable[sommetInitial][step-1];
+                            sommetsTable[sommetFinal][step] = Integer.toString((int)sommetInitial+1);
+                        }
+                    } else if (poidTable[sommetFinal][step] == Float.MAX_VALUE){
+                        poidTable[sommetFinal][step] = poidTable[sommetFinal][step-1];
+                        sommetsTable[sommetFinal][step] = Integer.toString((int)sommetInitial+1);
+
+                    }
+
+                }
+
+            }
+        }
+
+        // Vérification d'un potentiel cycle absorbant
+        boolean isAbsorbant = false;
+        for (int i = 0; i<poidTable.length; i++){
+            if(poidTable[i][poidTable[i].length-1] != poidTable[i][poidTable[i].length-2]){
+                isAbsorbant = true;
+                System.out.println("Le graphe est absorbant");
+                break;
+            }
+        }
+
+        System.out.println(Arrays.deepToString(poidTable));
+        System.out.println(Arrays.deepToString(sommetsTable));
+
     }
 
 
@@ -534,9 +650,7 @@ public class MainClass extends PApplet {
         int[][] matriceAdjacence = new int[nombreDeSommets][nombreDeSommets];
 
         for (int i = 0; i<matriceAdjacence.length; i++){
-            for (int j = 0; j<matriceAdjacence[i].length; j++){
-                matriceAdjacence[i][j] = 0;
-            }
+            Arrays.fill(matriceAdjacence[i], 0);
         }
 
         for (int i = 1; i<=nombreDaretes; i++){
@@ -547,8 +661,6 @@ public class MainClass extends PApplet {
         }
 
         return matriceAdjacence;
-
-
     }
 
 
@@ -561,7 +673,11 @@ public class MainClass extends PApplet {
 
         public void newMatriceAdjacenceFrame(int indexOfGrapheToRepresent){
             //this.frames.add(new MatriceAdjacenceFrame(indexOfGrapheToRepresent));
-            new MatriceAdjacenceFrame(indexOfGrapheToRepresent);
+            new MatriceFrame(indexOfGrapheToRepresent, MatriceFrame.ADJACENCE);
+        }
+
+        public void newMatriceTransitiveFrame(int indexOfGrapheToRepresent) {
+            new MatriceFrame(indexOfGrapheToRepresent, MatriceFrame.TRANSITIVE);
         }
     /*
         public void deleteFrame(int indexInFrameManager){
@@ -689,6 +805,9 @@ public class MainClass extends PApplet {
         private Sommet sommet_final;
         private float poid;
         private String libele;
+        int couleurR = 255;
+        int couleurV = 255;
+        int couleurB = 255;
 
         public Arete(int i, int f, float c){
             this.sommet_initial = graphe_manager.getCurentGraphe().getSommet(i);
@@ -739,6 +858,24 @@ public class MainClass extends PApplet {
             this.poid = c;
         }
 
+        public int getCouleurR() {
+            return this.couleurR;
+        }
+
+        public int getCouleurV() {
+            return this.couleurV;
+        }
+
+        public int getCouleurB() {
+            return this.couleurB;
+        }
+
+        public void setCouleur(int R, int V, int B) {
+            this.couleurR = R;
+            this.couleurV = V;
+            this.couleurB = B;
+        }
+
         public void draw(){
 
             Graphe g = graphe_manager.getCurentGraphe();
@@ -769,7 +906,9 @@ public class MainClass extends PApplet {
         private int posX;
         private int posY;
         private String name;
-        int color;
+        int couleurR = 255;
+        int couleurV = 255;
+        int couleurB = 255;
 
         /* Trois constructeurs pour mes sommets*/
         /* un qui prend simplement un numéro de sommet
@@ -800,12 +939,22 @@ public class MainClass extends PApplet {
             return this.posY;
         }
 
-        public int getColor() {
-            return this.color;
+        public int getCouleurR() {
+            return this.couleurR;
         }
 
-        public void setColor(int color) {
-            this.color = color;
+        public int getCouleurV() {
+            return this.couleurV;
+        }
+
+        public int getCouleurB() {
+            return this.couleurB;
+        }
+
+        public void setCouleur(int R, int V, int B) {
+            this.couleurR = R;
+            this.couleurV = V;
+            this.couleurB = B;
         }
 
         /* Méthode qui gère l'affichage des sommets*/
@@ -851,18 +1000,21 @@ public class MainClass extends PApplet {
         * et le sommet change de couleur; si jamais l'utilisateur clique gauche sur un sommet, il peux le déplacer,
         * le curseur change donc de forme et le sommet change de couleur*/
         private void afficherSommets(){
-            fill(255);
+            fill(this.getCouleurR(), this.getCouleurV(), this.getCouleurB());
             if (dist(mouseX, mouseY, this.posX, this.posY) < 10 && index_sommet_holded == -1) {
+                // Le sommet est survolé
                 if (index_sommet_hover == -1 || index_sommet_hover == this.index) {
-
+                    // si l'utilisateur ne tien pas de sommet dans la souris, ou que le sommet tenu est cette occurence
                     index_sommet_hover = this.index;
                     frame.setCursor(hand_corsor);
+                    // on le colorie en vert
                     fill(0,255,0);
                     if (mousePressed && mouseButton == LEFT) {
                         index_sommet_holded = this.index;
                     }
                 }
             } else if (index_sommet_hover == this.index && dist(mouseX, mouseY, this.posX, this.posY) > 10) {
+                // le sommet n'est pas sorvolé
                 index_sommet_hover = -1;
                 frame.setCursor(normal_cursor);
             }
@@ -872,6 +1024,7 @@ public class MainClass extends PApplet {
                 int margin = 20;
 
                 frame.setCursor(move_cursor);
+                // on le colorie en rouge
                 fill(255,0,0);
                 if (mouseX > margin && mouseY > margin + 30 && mouseX < width - margin && mouseY < height - margin - 40) {
                     this.posX = mouseX;
@@ -886,7 +1039,7 @@ public class MainClass extends PApplet {
             }
 
             if (in_search_of_top_to_dock){
-                stroke(255);
+                stroke(this.getCouleurR(), this.getCouleurV(), this.getCouleurB());
                 strokeWeight(3);
             }
 
@@ -967,6 +1120,17 @@ public class MainClass extends PApplet {
             Arete nouvelle_arete = new Arete(a, b);
             this.aretes.add(nouvelle_arete);
             //frame_manager.draw();
+        }
+
+        public void resetAllColors(){
+            // on reset les sommets
+            for (int i =0; i<sommets.size(); i++) {
+                sommets.get(i).setCouleur(255,255,255);
+            }
+            // on reset les aretes
+            for (int i =0; i<aretes.size(); i++) {
+                aretes.get(i).setCouleur(255,255,255);
+            }
         }
 
         public void addAreteDialog(int a, int b){
@@ -1083,7 +1247,6 @@ public class MainClass extends PApplet {
         }
 
         public void removeArete(Arete arete){
-            println("coucou");
             for (int i=0; i<this.aretes.size(); i++){
                 if (arete == this.aretes.get(i)){
                     this.aretes.remove(i);
@@ -1305,14 +1468,14 @@ public class MainClass extends PApplet {
 
     public class UIManager {
 
-        public int couleur_texte =                 color(255);
-        public int couleur_bandeau_supperieur =    color(24, 25, 21);
-        public int couleur_onglet_innactive =      color(32, 33, 28);
-        public int couleur_onglet_active =         color(40, 41, 35);
-        public int couleur_background =            color(40, 41, 35);
-        public int couleur_liseret_light =         color(70, 70, 70);
-        public int couleur_liseret_dark =          color(0);
-        public int couleur_bandeau_inferieur =     color(20, 20, 17);
+        public final int couleur_texte =                 color(255);
+        public final int couleur_bandeau_supperieur =    color(24, 25, 21);
+        public final int couleur_onglet_innactive =      color(32, 33, 28);
+        public final int couleur_onglet_active =         color(40, 41, 35);
+        public final int couleur_background =            color(40, 41, 35);
+        public final int couleur_liseret_light =         color(70, 70, 70);
+        public final int couleur_liseret_dark =          color(0);
+        public final int couleur_bandeau_inferieur =     color(20, 20, 17);
 
         private int onglet_selected_at_X = -1;
         private int onglet_selected_at_Y = -1;
@@ -1339,14 +1502,14 @@ public class MainClass extends PApplet {
                 textAlign(CENTER);
                 textSize(32);
                 fill(0);
-                text("aide a la création d'un graphe", (int)(width/2)-2, (int)(height/2)-2);
+                text("Pour créer un nouveau Graphe \n faites Fichier -> Nouveau", (int)(width/2)-2, (int)(height/2)-2-20);
                 fill(255);
-                text("aide a la création d'un graphe", (int)(width/2), (int)(height/2));
+                text("Pour créer un nouveau Graphe \n faites Fichier -> Nouveau", (int)(width/2), (int)(height/2)-20);
             } else if (graphe_manager.getCurentGraphe().getAmountOfSommets() == 0){
                 // y'a un graphe mais y'a pas de sommet alors on envoi l'aide a la création de sommet et d'aretes
                 textAlign(CENTER);
                 textSize(32);
-                text("aide a la création de sommet et d'aretes", (int)(width/2), (int)(height/2));
+                text("Pour ajouter un sommet, faites \n Graphe -> Nouvelle arête \n Pour une arete, vous pouvez maintenir \n un clik droit entre deux sommets", (int)(width/2), (int)(height/2-70));
             }
         }
 
@@ -1427,7 +1590,7 @@ public class MainClass extends PApplet {
 
                 /* Vérifie si le curseur survole l'onglet qui est en train d'étre déssiné si jamais la sourie est cliquée
                 * alors le graphe a afficher vas changer en conséquence */
-                if (mouseY < 35 && mouseY > 0 && mouseX > 10 + i*largeur_onglet && mouseX < 10 + (i+1)*largeur_onglet) {
+                if (mouseY < 35 && mouseY > 0 && mouseX > 10 + i*largeur_onglet && mouseX < 10 + (i+1)*largeur_onglet && index_sommet_holded == -1 && !in_search_of_top_to_dock) {
                     index_onglet_hover = 1;
                     frame.setCursor(hand_corsor);
                     if (mousePressed) {
@@ -1512,8 +1675,13 @@ public class MainClass extends PApplet {
                 yD = mouseY;
             }
 
-            fill(255);
-            stroke(255);
+            if (arete != null){
+                fill(arete.getCouleurR(), arete.getCouleurV(), arete.getCouleurB());
+                stroke(arete.getCouleurR(), arete.getCouleurV(), arete.getCouleurB());
+            } else {
+                fill(255,50,50);
+                stroke(255,50,50);
+            }
 
             if (sommetInitial == sommetFinal){
 
@@ -1523,7 +1691,7 @@ public class MainClass extends PApplet {
 
                 mouseDistToArrete = dist(mouseX, mouseY, sommetInitial.getX() + 20, sommetInitial.getY()) - radius;
 
-                System.out.println(mouseDistToArrete);
+                //System.out.println(mouseDistToArrete);
 
                 if (index_sommet_hover == -1 && index_sommet_holded == -1 && !in_search_of_top_to_dock){
                     if (mouseDistToArrete < 5 && mouseDistToArrete > -5 && (arete_hover == null || arete_hover == arete)){
@@ -1551,11 +1719,11 @@ public class MainClass extends PApplet {
                     }
 
                 } else {
-                    stroke(255);
+                    stroke(arete.getCouleurR(), arete.getCouleurV(), arete.getCouleurB());
                     noFill();
                     arc(sommetInitial.getX() + radius, sommetInitial.getY(), diameter, diameter, PI+QUARTER_PI, TWO_PI+3*QUARTER_PI);
 
-                    fill(255);
+                    fill(arete.getCouleurR(), arete.getCouleurV(), arete.getCouleurB());
                     noStroke();
                     if (typeDeGraphe == Graphe.ORIENTE || typeDeGraphe == Graphe.ORIENTE_LIBELE || typeDeGraphe == Graphe.ORIENTE_PONDERE){
                         this.arrowHead(sommetInitial.getX() + 5, sommetInitial.getY() + 15, sommetInitial.getX()+ 1, sommetInitial.getY() + 7);
@@ -1723,6 +1891,7 @@ public class MainClass extends PApplet {
 
         private JMenuItem action_calcul_matrice_adjacente;
         private JMenuItem action_calcul_matrice_transitive;
+        private JMenuItem action_calcul_ford_bellman;
 
         private JMenuItem action_ajouter_une_arete;
         private JMenuItem action_ajouter_un_sommet;
@@ -1839,13 +2008,20 @@ public class MainClass extends PApplet {
             JMenu calculer_menu = new JMenu("Calculer");
             action_calcul_matrice_adjacente = new JMenuItem("Matrice Adjacente");
             action_calcul_matrice_transitive = new JMenuItem("Matrice Transitive");
+            action_calcul_ford_bellman = new JMenuItem("Algo. Ford-Bellman");
 
             action_calcul_matrice_adjacente.addActionListener(this);
             action_calcul_matrice_transitive.addActionListener(this);
 
+            action_calcul_matrice_transitive.setEnabled(false);
+
+            action_calcul_ford_bellman.addActionListener(this);
+
             calculer_menu.add(action_calcul_matrice_adjacente);
             calculer_menu.add(action_calcul_matrice_transitive);
+
             outils_menu.add(calculer_menu);
+            outils_menu.add(action_calcul_ford_bellman);
 
             // --------------------------------------------------------------
 
@@ -1911,7 +2087,7 @@ public class MainClass extends PApplet {
             Object src = e.getSource();
 
             if (src == action_ajouter_un_sommet) {
-                println("Ajouter un nouveau sommet");
+                //println("Ajouter un nouveau sommet");
                 graphe_manager.getCurentGraphe().addSommet();
 
 
@@ -1963,7 +2139,7 @@ public class MainClass extends PApplet {
             }
 
             else if (src == action_supprimer_une_arete) {
-                System.out.println("Supprimer une arête");
+                //System.out.println("Supprimer une arête");
 
 
             }
@@ -1989,7 +2165,7 @@ public class MainClass extends PApplet {
                     out.close();
                 }
 
-                System.out.println(out);
+                //System.out.println(out);
             }
 
             else if (src == action_enregistrer_sous){
@@ -2017,20 +2193,44 @@ public class MainClass extends PApplet {
 
             }
 
+            else if (src == action_calcul_ford_bellman){
+
+                /* Création d'une instance de Dialog, avec tout les parametres qui vont avec, tant que l'utilisateur n'aura pas
+                 * cliqué sur OK ou qu'il aura cliqué sur annuler le code attend a ce niveau*/
+                Dialog dial = new Dialog<Integer, Integer, NullType>(
+                        "Recherche du plus court chemin",
+                        "Sommet de départ :",
+                        "Sommet de fin :",
+                        "",
+                        Integer.class,
+                        Integer.class,
+                        NullType.class);
+
+                /* On réculère les valeurs que l'utilisateur a rentré*/
+                if (dial.getA() != null && dial.getB() != null) {
+                    int a = (int)dial.getA();
+                    int b = (int)dial.getB();
+
+                    fordBellman(a);
+                }
+
+            }
+
             else if (src == action_supprimer_un_sommet) {
-                System.out.println("Supprimer un sommet");
+                //System.out.println("Supprimer un sommet");
 
 
             }
 
             else if (src == action_calcul_matrice_transitive) {
-                System.out.println("Calcul de la matrice transitive");
+                //System.out.println("Calcul de la matrice transitive");
+                frame_manager.newMatriceTransitiveFrame(graphe_manager.getNumberOfCurentGrahe());
                 //frame_manager.newMatriceFrame();
                 //frame_manager.draw();
             }
 
             else if (src == action_calcul_matrice_adjacente) {
-                System.out.println("Calcul de la matrice adjacente");
+                //System.out.println("Calcul de la matrice adjacente");
                 frame_manager.newMatriceAdjacenceFrame(graphe_manager.getNumberOfCurentGrahe());
                 //frame_manager.draw();
             }
